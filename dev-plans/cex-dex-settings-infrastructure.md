@@ -1,7 +1,9 @@
 # Dev Plan: CEX/DEX Settings Infrastructure + Persistence
 
 ## Date: 2024
-## Status: In Progress
+## Status: **Completed** ✅
+## Date Completed: 2026-04-26
+## Commit: 10e5953
 
 ## Overview
 Restructure the settings infrastructure to support both CEX and DEX connections with proper US-accessible filtering. Add persistent storage with localStorage (development) and document production database path.
@@ -192,11 +194,24 @@ interface DEXConnection {
 - **Audit logs for all connection changes**
 - **Compliance with SEC/CFTC regulations for US users**
 
-## 8. Next Steps (After This PR)
+## ✅ Completed Items
 
-1. Build bot configuration pages (grid, DCA, market-making strategies)
+- [x] SettingsContext with full CEX/DEX/prediction types and context state
+- [x] US CEX presets (Coinbase Pro, Kraken, Bybit US, Deribit, OKX)
+- [x] US DEX presets grouped by asset (ETH/SOL/BTC chains)
+- [x] SettingsDialog with full CEX/DEX split, connection state, test/save buttons
+- [x] SettingsDialogContent with DEXGroup (collapsible asset-chain grouping), DEXCard, CCECard, PredictionCard, save button, test-all button
+- [x] SettingsContext shim for Next.js compatibility (src/lib/settingsContext.ts)
+- [x] localStorage persistence — auto-save on change, auto-load on mount
+- [x] live connection count badge in Sidebar
+- [x] Integration into app layout and sidebar
+- [x] Dev plan documentation
+
+## 8. Next Steps
+
+1. **Build bot configuration pages** — grid, DCA, market-making strategy forms (next priority)
 2. Add exchange-specific order types support
 3. Implement live price feeds via connected exchanges
 4. Build prediction market API integration
 5. Add multi-user support with auth (Supabase/Firebase)
-6. Migrate from localStorage to PostgreSQL/MongoDB for production
+6. Migrate from localStorage to PostgreSQL/MongoDB for production (later)
