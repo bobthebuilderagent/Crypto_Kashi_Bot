@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { predictionMarkets, mockPositions } from "@/data/mock"
-import { Target, TrendingUp, Clock, DollarSign, BarChart3, Search, Filter, Fire } from "lucide-react"
+import { Target, TrendingUp, DollarSign, BarChart3, Search, Flame } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -48,7 +48,7 @@ export function PredictionsPage() {
             { 
               label: "Total P&L", 
               value: `${totalPnl > 0 ? "+" : ""}$${totalPnl.toLocaleString()}`, 
-              icon: <TrendingUp className="h-5 w-5 ${totalPnl >= 0 ? "text-green-400" : "text-red-400"}" />,
+              icon: <TrendingUp className={`h-5 w-5 ${totalPnl >= 0 ? "text-green-400" : "text-red-400"}`} />,
               color: totalPnl >= 0 ? "from-green-600 to-emerald-500" : "from-red-600 to-rose-500"
             },
             { 
@@ -93,7 +93,7 @@ export function PredictionsPage() {
         >
           <div className="p-4 rounded-xl bg-gradient-to-r from-purple-900/50 to-cyan-900/50 border border-purple-500/20">
             <div className="flex items-center gap-3">
-              <Fire className="h-6 w-6 text-orange-400 animate-pulse" />
+              <Flame className="h-6 w-6 text-orange-400 animate-pulse" />
               <div>
                 <h3 className="font-semibold text-white">🔥 Hot Markets</h3>
                 <p className="text-sm text-slate-400">BTC and ETH markets are trending with high volume</p>
@@ -136,7 +136,7 @@ export function PredictionsPage() {
             <Dialog>
               <DialogTrigger asChild>
                 <Button className="bg-gradient-to-r from-purple-600 to-pink-500 border-0 text-white hover:from-purple-500 hover:to-pink-400">
-                  <Fire className="mr-1 h-4 w-4" /> Create Market
+                  <Flame className="mr-1 h-4 w-4" /> Create Market
                 </Button>
               </DialogTrigger>
               <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-2xl">

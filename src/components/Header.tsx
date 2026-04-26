@@ -4,10 +4,20 @@ import { useAppContext } from "@/lib/providers"
 import { motion } from "framer-motion"
 import { TrendingUp, Globe, Moon, Sun, Menu, X } from "lucide-react"
 import { useState } from "react"
+import { useRouter, usePathname } from "next/navigation"
 
 export function Header() {
-  const { theme, setTheme, section, setSection } = useAppContext()
+  const { theme, setTheme } = useAppContext()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const router = useRouter()
+  const pathname = usePathname()
+  
+  // Derive section from URL instead of context state
+  const currentSection = pathname === "/" || pathname === "" ? "home" : pathname.slice(1)
+
+  const navigate = (s: string) => {
+    router.push(s === "home" ? "/" : `/${s}`)
+  }
 
   return (
     <motion.header
@@ -32,9 +42,9 @@ export function Header() {
           {(["home", "crypto", "predictions"] as const).map((s) => (
             <button
               key={s}
-              onClick={() => setSection(s)}
+              onClick={() => navigate(s)}
               className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                section === s
+                currentSection === s
                   ? "text-white bg-white/10"
                   : "text-slate-400 hover:text-white hover:bg-white/5"
               }`}
@@ -42,14 +52,14 @@ export function Header() {
               {s === "home" && "🏠 Home"}
               {s === "crypto" && "₿ Crypto Bot"}
               {s === "predictions" && "🎯 Predictions"}
-              {section === s && (
+              {currentSection === s && (
                 <motion.div
                   layoutId="activeTab"
                   className="absolute inset-0 rounded-lg border-2 border-purple-500/50"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                 />
               )}
-              <span className="relative z-10">{section === s ? "" : ""}</span>
+              <span className="relative z-10"></span>
             </button>
           ))}
         </nav>
@@ -83,11 +93,11 @@ export function Header() {
               <button
                 key={s}
                 onClick={() => {
-                  setSection(s)
+                  navigate(s)
                   setMobileMenuOpen(false)
                 }}
                 className={`px-4 py-3 rounded-lg text-sm font-medium text-left ${
-                  section === s
+                  currentSection === s
                     ? "text-white bg-white/10"
                     : "text-slate-400 hover:text-white hover:bg-white/5"
                 }`}

@@ -74,6 +74,7 @@ export interface PredictionConnection {
   id: string
   platform: 'kashi' | 'polymarket'
   apiKey: string
+  token?: string
   walletAddress?: string
   connected: boolean
 }
