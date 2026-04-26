@@ -44,7 +44,7 @@ export function CryptoBotPage() {
           {[
             { label: "Total Bots", value: stats.totalBots, icon: <Bot className="h-5 w-5 text-cyan-400" />, trend: "all" },
             { label: "Active", value: stats.activeBots, icon: <Activity className="h-5 w-5 text-green-400" />, trend: "active" },
-            { label: "Total P&L", value: `$${stats.totalPnl.toLocaleString()}`, icon: <TrendingUp className="h-5 w-5 ${stats.totalPnl > 0 ? "text-green-400" : "text-red-400"}" />, trend: stats.totalPnl > 0 ? "up" : "down" },
+            { label: "Total P&L", value: `$${stats.totalPnl.toLocaleString()}`, icon: <TrendingUp className={`h-5 w-5 ${stats.totalPnl > 0 ? "text-green-400" : "text-red-400"}`} />, trend: stats.totalPnl > 0 ? "up" : "down" },
             { label: "Active Volume", value: stats.activeVolume, icon: <Shield className="h-5 w-5 text-purple-400" />, trend: "volume" },
           ].map((stat, i) => (
             <motion.div

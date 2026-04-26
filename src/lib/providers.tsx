@@ -1,6 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useState } from 'react'
+import { SettingsProvider } from '@/context/settings'
 
 type Theme = 'dark' | 'light'
 type Section = 'home' | 'crypto' | 'predictions'
@@ -29,4 +30,14 @@ export function useAppContext() {
   const context = useContext(AppContext)
   if (!context) throw new Error('useAppContext must be used within AppProvider')
   return context
+}
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <SettingsProvider>
+      <AppProvider>
+        {children}
+      </AppProvider>
+    </SettingsProvider>
+  )
 }

@@ -1,9 +1,10 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Bot, TrendingUp, Target, Settings, BarChart3, History, Clock, Zap } from "lucide-react"
+import { Bot, TrendingUp, Target, Settings, BarChart3, History, Clock, Zap, Key } from "lucide-react"
 import { useAppContext } from "@/lib/providers"
 import { Badge } from "@/components/ui/badge"
+import { SettingsDialog } from "@/components/SettingsDialog"
 
 interface SidebarItem {
   icon: React.ReactNode
@@ -24,7 +25,7 @@ const cryptoSection: SidebarSection = {
     { icon: <TrendingUp className="h-4 w-4" />, label: "Market Overview" },
     { icon: <BarChart3 className="h-4 w-4" />, label: "Analytics" },
     { icon: <History className="h-4 w-4" />, label: "Trade History" },
-    { icon: <Settings className="h-4 w-4" />, label: "Settings" },
+    { icon: <Key className="h-4 w-4" />, label: "Settings" },
   ],
 }
 
