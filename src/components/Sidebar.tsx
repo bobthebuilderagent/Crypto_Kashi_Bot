@@ -51,13 +51,13 @@ export function Sidebar({ activeSection }: { activeSection: 'crypto' | 'predicti
     // Map sidebar items to actual routes
     const routeMap: Record<string, string> = {
       'Bot Dashboard': '/crypto',
-      'Market Overview': '/crypto',
+      'Market Overview': '/crypto/market-overview',
       'Analytics': '/crypto/analytics',
       'Trade History': '/crypto/trade-history',
-      'Settings': '/crypto',
+      'Settings': activeSection === 'crypto' ? '/crypto/settings' : '/predictions/settings',
       'Market Feed': '/predictions',
       'My Positions': '/predictions/my-positions',
-      'Upcoming Markets': '/predictions/hot-markets',
+      'Upcoming Markets': '/predictions/upcoming-markets',
       'Hot Markets': '/predictions/hot-markets',
     }
     router.push(routeMap[path] || `/${activeSection}`)
