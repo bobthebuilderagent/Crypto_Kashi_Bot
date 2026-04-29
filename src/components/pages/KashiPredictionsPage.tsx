@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { Progress } from "@/components/ui/progress"
-import { mockMarkets, mockPositions } from "@/data/mock"
+import { predictionMarkets, mockPositions } from "@/data/mock"
 
 export function KashiPredictionsPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -24,7 +24,7 @@ export function KashiPredictionsPage() {
   const categories = ["all", "Finance", "Crypto", "Politics", "Sports", "Tech", "Economics", "Entertainment"]
   const platforms = ["all", "Kashi", "Polymarket"]
 
-  const filteredMarkets = mockMarkets.filter(market => {
+  const filteredMarkets = predictionMarkets.filter(market => {
     const matchesSearch = market.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           market.category.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = filterCategory === "all" || market.category.toLowerCase() === filterCategory.toLowerCase()
@@ -106,11 +106,13 @@ export function KashiPredictionsPage() {
             />
           </div>
           <Dialog open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="border-slate-700 bg-slate-900/50 text-white">
-                <Filter className="w-4 h-4 mr-2" />
-                Filters
-              </Button>
+            <DialogTrigger
+              render={
+                <Button variant="outline" className="border-slate-700 bg-slate-900/50 text-white" />
+              }
+            >
+              <Filter className="w-4 h-4 mr-2" />
+              Filters
             </DialogTrigger>
             <DialogContent className="bg-slate-950 border-slate-700 text-white">
               <DialogHeader>
@@ -119,7 +121,7 @@ export function KashiPredictionsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm text-slate-400 mb-1 block">Category</Label>
-                  <Select value={filterCategory} onValueChange={setFilterCategory}>
+                  <Select value={filterCategory} onValueChange={(v) => setFilterCategory(v as string)}>
                     <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
@@ -132,7 +134,7 @@ export function KashiPredictionsPage() {
                 </div>
                 <div>
                   <Label className="text-sm text-slate-400 mb-1 block">Platform</Label>
-                  <Select value={filterPlatform} onValueChange={setFilterPlatform}>
+                  <Select value={filterPlatform} onValueChange={(v) => setFilterPlatform(v as string)}>
                     <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
@@ -155,11 +157,13 @@ export function KashiPredictionsPage() {
         </div>
         <div>
           <Dialog>
-            <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-purple-600 to-pink-500 border-0 text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                New Market
-              </Button>
+            <DialogTrigger
+              render={
+                <Button className="bg-gradient-to-r from-purple-600 to-pink-500 border-0 text-white" />
+              }
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              New Market
             </DialogTrigger>
             <DialogContent className="bg-slate-950 border-slate-700 text-white">
               <DialogHeader>
@@ -219,17 +223,15 @@ export function KashiPredictionsPage() {
       </div>
 
       {/* Markets List */}
-      <Tabs defaultValue="active" className="mb-6">
-        <div className="flex items-center gap-4 mb-4">
-          <TabsList className="bg-slate-800/50 border border-slate-700">
-            <TabsTrigger value="active" className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-500">
-              Active Markets
-            </TabsTrigger>
-            <TabsTrigger value="active" className=" text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-500">
-              My Positions
-            </TabsTrigger>
-          </TabsList>
-        </div>
+      <Tabs defaultValue="active" className="mb-6 flex flex-col">
+        <TabsList className="bg-slate-800/50 border border-slate-700 mb-4">
+          <TabsTrigger value="active" className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-500">
+            Active Markets
+          </TabsTrigger>
+          <TabsTrigger value="positions" className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-500">
+            My Positions
+          </TabsTrigger>
+        </TabsList>
 
         <TabsContent value="active">
           <div className="grid gap-4">
@@ -290,7 +292,7 @@ export function KashiPredictionsPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="active">
+        <TabsContent value="positions">
           <div className="grid gap-4">
             {mockPositions.map((position, i) => (
               <motion.div

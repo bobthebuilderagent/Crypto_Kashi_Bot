@@ -39,16 +39,15 @@ function CEXCard({
           <CheckCircle2 className="h-4 w-4 text-green-400" />
         </div>
       )}
-      
+
       <div className="flex items-center gap-3 mb-3">
         <span className="text-2xl">{conn.icon}</span>
         <div>
           <h4 className="font-semibold text-white">{conn.name}</h4>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${
-            conn.type === 'both' ? 'bg-cyan-500/20 text-cyan-300' :
+          <span className={`text-xs px-2 py-0.5 rounded-full ${conn.type === 'both' ? 'bg-cyan-500/20 text-cyan-300' :
             conn.type === 'futures' ? 'bg-orange-500/20 text-orange-300' :
-            'bg-green-500/20 text-green-300'
-          }`}>
+              'bg-green-500/20 text-green-300'
+            }`}>
             {conn.type}
           </span>
         </div>
@@ -111,7 +110,7 @@ function CEXCard({
             {isTesting && <Loader2 className="h-4 w-4 animate-spin" />}
             {isTesting ? 'Testing...' : 'Test Connection'}
           </button>
-          
+
           {conn.connected && (
             <button
               onClick={() => removeCEX(conn.id)}
@@ -147,7 +146,7 @@ function DEXCard({
           <CheckCircle2 className="h-4 w-4 text-green-400" />
         </div>
       )}
-      
+
       <div className="flex items-center gap-3 mb-3">
         <span className="text-2xl">{conn.icon}</span>
         <div>
@@ -182,7 +181,7 @@ function DEXCard({
         <button
           onClick={() => testDEXConnection(conn.id)}
           disabled={isTesting}
-          className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 disabled:opacity-50 text-white py-2 rounded-lg text-sm font-medium hover:from-cyan-400 hover:to-blue-400 transition-all flex items-center justify-center gap-2"
+          className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 disabled:opacity-50 text-white py-2 rounded-lg text-sm font-medium hover:from-cyan-400 hover:to-blue-500 transition-all flex items-center justify-center gap-2"
         >
           {isTesting && <Loader2 className="h-4 w-4 animate-spin" />}
           {isTesting ? 'Testing...' : 'Test Connection'}
@@ -213,9 +212,9 @@ function PredictionCard({
           <CheckCircle2 className="h-4 w-4 text-green-400" />
         </div>
       )}
-      
+
       <h4 className="font-semibold text-white mb-3">{conn.platform}</h4>
-      
+
       <div className="space-y-2">
         <div>
           <label className="text-xs text-slate-400 mb-1 block">API Key / Token</label>
@@ -303,6 +302,7 @@ export function SettingsDialog({ isOpen, onClose }: { isOpen: boolean; onClose: 
     predictionConnections,
     addCEX,
     addDEX,
+    addPrediction,
     testAll,
     saveAll,
     isTesting,
@@ -347,15 +347,14 @@ export function SettingsDialog({ isOpen, onClose }: { isOpen: boolean; onClose: 
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 p-4 text-sm font-medium transition ${
-                activeTab === tab 
-                  ? 'text-cyan-400 border-b-2 border-cyan-400 bg-white/5' 
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
-              }`}
+              className={`flex-1 p-4 text-sm font-medium transition ${activeTab === tab
+                ? 'text-cyan-400 border-b-2 border-cyan-400 bg-white/5'
+                : 'text-slate-400 hover:text-white hover:bg-white/5'
+                }`}
             >
               {tab === 'cex' ? '🏦 Centralized Exchanges (CEX)' :
-               tab === 'dex' ? '📊 Decentralized Exchanges (DEX)' :
-               '🎯 Prediction Markets'}
+                tab === 'dex' ? '📊 Decentralized Exchanges (DEX)' :
+                  '🎯 Prediction Markets'}
             </button>
           ))}
         </div>
@@ -369,13 +368,25 @@ export function SettingsDialog({ isOpen, onClose }: { isOpen: boolean; onClose: 
                 <p className="text-slate-400 text-sm">
                   Connected US-accessible exchanges for bot operations
                 </p>
-                <button
-                  onClick={addCEX}
-                  className="px-4 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-lg text-sm font-medium transition flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Exchange
-                </button>
+                <div className="flex gap-2">
+                  {US_CEX_PRESETS.map(preset => (
+                    <button
+                      key={preset.id}
+                      onClick={() => addCEX()}
+                      className="px-3 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-lg text-sm transition flex items-center gap-2"
+                    >
+                      <span className="text-lg">{preset.icon}</span>
+                      <span className="max-w-[100px] truncate">{preset.name}</span>
+                    </button>
+                  ))}
+                  <button
+                    onClick={addCEX}
+                    className="px-3 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-lg text-sm transition flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="max-w-[100px] truncate">Custom</span>
+                  </button>
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {cexConnections.map((conn, i) => (
@@ -394,7 +405,7 @@ export function SettingsDialog({ isOpen, onClose }: { isOpen: boolean; onClose: 
                 </p>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => addDEX(US_DEX_PRESETS.find(p => p.id === 'eth-uniswap')!)}
+                    onClick={() => addDEX(US_DEX_PRESETS.find(p => p.id === 'eth-uniswap-v3')!)}
                     className="px-3 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-lg text-sm transition flex items-center gap-2"
                   >
                     <Plus className="h-4 w-4" />
@@ -415,6 +426,15 @@ export function SettingsDialog({ isOpen, onClose }: { isOpen: boolean; onClose: 
                 <p className="text-slate-400 text-sm">
                   Connect prediction market platforms for bot trading
                 </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => addPrediction(PREDICTION_PRESETS.find(p => p.id === 'kashi')!)}
+                    className="px-3 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg text-sm transition flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Prediction
+                  </button>
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {predictionConnections.map((conn, i) => (
@@ -433,7 +453,7 @@ export function SettingsDialog({ isOpen, onClose }: { isOpen: boolean; onClose: 
           >
             Cancel
           </button>
-          
+
           <div className="flex gap-3">
             <button
               onClick={() => testAll()}
@@ -443,7 +463,7 @@ export function SettingsDialog({ isOpen, onClose }: { isOpen: boolean; onClose: 
               {isTesting && <Loader2 className="h-4 w-4 animate-spin" />}
               {isTesting ? 'Testing...' : 'Test All Connections'}
             </button>
-            
+
             <button
               onClick={() => saveAll()}
               className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl text-sm font-medium hover:from-cyan-400 hover:to-blue-400 transition-all flex items-center gap-2"

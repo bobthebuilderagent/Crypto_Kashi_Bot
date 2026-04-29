@@ -32,6 +32,7 @@ export interface PredictionConnection {
   id: string
   platform: 'kashi' | 'polymarket'
   apiKey: string
+  token?: string
   walletAddress: string
   connected: boolean
 }
@@ -69,7 +70,7 @@ export const US_DEX_PRESETS: Omit<DEXConnection, 'connected' | 'walletAddress' |
   { id: 'usdt-uniswap', asset: 'USDT', dex: 'Across DEXes', icon: '💲' },
 ]
 
-const PREDICTION_PRESETS: Omit<PredictionConnection, 'apiKey' | 'walletAddress' | 'connected'>[] = [
+export const PREDICTION_PRESETS: Omit<PredictionConnection, 'apiKey' | 'walletAddress' | 'connected'>[] = [
   { id: 'kashi', platform: 'kashi' },
   { id: 'polymarket', platform: 'polymarket' },
 ]
@@ -126,6 +127,7 @@ interface SettingsContextType {
   setPredictionConnections: (conns: PredictionConnection[]) => void
   updatePrediction: (id: string, key: keyof PredictionConnection, value: string | boolean) => void
   testPredictionConnection: (id: string) => Promise<boolean>
+  addPrediction: (preset: Omit<PredictionConnection, 'connected' | 'apiKey' | 'walletAddress'>) => void
 
   // Global
   isTesting: boolean
@@ -271,6 +273,16 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     return true
   }, [])
 
+  const addPrediction = useCallback((preset: Omit<PredictionConnection, 'connected' | 'apiKey' | 'walletAddress'>) => {
+    const newConn: PredictionConnection = {
+      ...preset,
+      connected: false,
+      apiKey: '',
+      walletAddress: '',
+    }
+    setPredictionState(prev => [...prev, newConn])
+  }, [])
+
   // ── Global ──
 
   const testAll = useCallback(async (): Promise<boolean> => {
@@ -313,6 +325,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setPredictionConnections: setPredictionState,
       updatePrediction,
       testPredictionConnection,
+      addPrediction,
       isTesting,
       testAll,
       saveAll,

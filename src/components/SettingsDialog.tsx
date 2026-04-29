@@ -1,14 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Settings, Key, Wallet, Link, Globe, Save, Loader2, Trash2, Plus } from "lucide-react"
+import { Settings, Key, Wallet, Link, Globe, Save, Loader2, Trash2, Plus, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { motion, AnimatePresence } from "framer-motion"
 import { useSettings, DEXConnection } from "@/context/settings"
 import { ChevronDown, ChevronUp } from "lucide-react"
+import { US_DEX_PRESETS } from "@/context/settings"
 
 function CEXCard({ conn, index }: { conn: any; index: number }) {
   const { updateCEX, testCEXConnection, isTesting, addCEX, removeCEX } = useSettings()
@@ -187,8 +188,8 @@ function PredictionCard({ conn, index }: { conn: any; index: number }) {
           <label className="text-xs text-slate-400 mb-1 block">API Key / Token</label>
           <input
             type="text"
-            value={conn.apiKey || conn.token || ''}
-            onChange={(e) => updatePrediction(conn.id, conn.apiKey ? 'apiKey' : 'token', e.target.value)}
+            value={conn.token || conn.apiKey || ''}
+            onChange={(e) => updatePrediction(conn.id, 'token', e.target.value)}
             placeholder="API Key / Token"
             className="w-full bg-slate-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500/50 transition"
           />
@@ -198,7 +199,7 @@ function PredictionCard({ conn, index }: { conn: any; index: number }) {
           <label className="text-xs text-slate-400 mb-1 block">Wallet Address (Optional)</label>
           <input
             type="text"
-            value={conn.walletAddress || ''}
+            value={conn.walletAddress || conn.token || ''}
             onChange={(e) => updatePrediction(conn.id, 'walletAddress', e.target.value)}
             placeholder="0x..."
             className="w-full bg-slate-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500/50 transition"
@@ -292,7 +293,7 @@ export function SettingsDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger>
         <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-colors text-left cursor-pointer">
           <Settings className="h-4 w-4" />
           <span>Settings</span>

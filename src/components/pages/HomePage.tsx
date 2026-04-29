@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import { ArrowRight, TrendingUp, Target, Shield, Zap, BarChart3, Globe, Clock } from "lucide-react"
-import { useAppContext } from "@/lib/providers"
+import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
@@ -14,7 +14,7 @@ const stats = [
 ]
 
 export function HomePage() {
-  const { setSection } = useAppContext()
+  const router = useRouter()
 
   return (
     <motion.div
@@ -44,15 +44,15 @@ export function HomePage() {
             </p>
             <div className="flex justify-center gap-4 flex-wrap">
               <button
-                onClick={() => setSection("crypto")}
-                className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-cyan-500 rounded-xl font-semibold text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all hover:scale-105"
+                onClick={() => router.push("/crypto")}
+                className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-cyan-500 rounded-xl font-semibold text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all hover:scale-105 cursor-pointer"
               >
                 {` `} Launch Crypto Bot
                 <ArrowRight className="inline-block ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </button>
               <button
-                onClick={() => setSection("predictions")}
-                className="px-8 py-4 border-2 border-slate-600 rounded-xl font-semibold text-white hover:border-purple-500 hover:bg-purple-500/5 transition-all"
+                onClick={() => router.push("/predictions")}
+                className="px-8 py-4 border-2 border-slate-600 rounded-xl font-semibold text-white hover:border-purple-500 hover:bg-purple-500/5 transition-all cursor-pointer"
               >
                 Browse Predictions
               </button>
@@ -163,8 +163,8 @@ export function HomePage() {
             <h2 className="text-3xl font-bold text-white mb-4">Ready to get started?</h2>
             <p className="text-slate-300 mb-6">Launch your first trading bot or browse prediction markets</p>
             <button
-              onClick={() => setSection("crypto")}
-              className="px-8 py-3 bg-white text-slate-900 font-semibold rounded-xl hover:bg-slate-100 transition-colors"
+              onClick={() => router.push("/crypto")}
+              className="px-8 py-3 bg-white text-slate-900 font-semibold rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
             >
               Start Trading Now
             </button>

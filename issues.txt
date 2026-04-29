@@ -1,0 +1,36 @@
+docker stop hermes-brain && docker rm -f hermes-brain
+
+docker run -d \
+  --name hermes-brain \
+  --gpus all \
+  -p 11434:11434 \
+  -v "/mnt/c/Users/Matthias/Desktop/Hermes Agent/ollama_data:/models" \
+  ghcr.io/ggml-org/llama.cpp:server-cuda \
+  -m /models/Qwen2.5-Coder-14B-Instruct-Q4_K_M.gguf \
+  -c 98304 \
+  -np 1 \
+  -ngl 99 \
+  -fa on \
+  --host 0.0.0.0 \
+  --port 11434
+
+docker run -d \
+  --name hermes-brain \
+  --gpus all \
+  -p 11434:11434 \
+  -v "/mnt/c/Users/Matthias/Desktop/Hermes Agent/ollama_data:/models" \
+  ghcr.io/ggml-org/llama.cpp:server-cuda \
+  -m /models/Qwen3.5-9b-Sushi-Coder-RL.Q6_K.gguf \
+  -c 65536 \
+  -np 1 \
+  -ngl 99 \
+  --cache-type-k q4_0 \
+  --cache-type-v q4_0 \
+  -fa on \
+  --host 0.0.0.0 \
+  --port 11434
+
+systemctl --user restart hermes-gateway
+
+
+Okay Murph, we need to get some code debugged and fixed please! In this folder C:\Users\Matthias\Desktop\Crypto_Kashi_Bot\Crypto_Kashi_Bot and in this file: C:\Users\Matthias\Desktop\Crypto_Kashi_Bot\Crypto_Kashi_Bot\src\components\SettingsDialogContent.tsx we need to fix the addCEX button with the preset, as that is not used and needs fixed please! Expected 0 arguments, but got 1.ts(2554) on line 375 in the file please. LEts fix that so we can move on please. LEt me know when you get done, and stay focused, and only edit that one issue please, and be quick!

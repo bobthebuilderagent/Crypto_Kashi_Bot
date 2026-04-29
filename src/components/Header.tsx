@@ -2,7 +2,7 @@
 
 import { useAppContext } from "@/lib/providers"
 import { motion } from "framer-motion"
-import { TrendingUp, Globe, Moon, Sun, Menu, X } from "lucide-react"
+import { TrendingUp, Globe, Moon, Sun, Menu, X, Search, Bell } from "lucide-react"
 import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 
@@ -39,20 +39,26 @@ export function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1">
-          {(["home", "crypto", "predictions"] as const).map((s) => (
+          {([
+            { label: "home", name: "🏠 Home" },
+            { label: "crypto", name: "₿ Crypto Bot" },
+            { label: "predictions", name: "🎯 Predictions" },
+            { label: "analytics", name: "📊 Analytics" },
+            { label: "trade-history", name: "📜 Trade History" },
+            { label: "hot-markets", name: "🔥 Hot Markets" },
+            { label: "my-positions", name: "💰 My Positions" },
+          ] as const).map((s) => (
             <button
-              key={s}
-              onClick={() => navigate(s)}
+              key={s.label}
+              onClick={() => navigate(s.label)}
               className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                currentSection === s
+                currentSection === s.label
                   ? "text-white bg-white/10"
                   : "text-slate-400 hover:text-white hover:bg-white/5"
               }`}
             >
-              {s === "home" && "🏠 Home"}
-              {s === "crypto" && "₿ Crypto Bot"}
-              {s === "predictions" && "🎯 Predictions"}
-              {currentSection === s && (
+              {s.name}
+              {currentSection === s.label && (
                 <motion.div
                   layoutId="activeTab"
                   className="absolute inset-0 rounded-lg border-2 border-purple-500/50"
@@ -66,6 +72,14 @@ export function Header() {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          <div className="relative hidden md:block">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+            <input
+              type="text"
+              placeholder="Search..."
+              className="pl-9 pr-4 py-2 bg-slate-950/50 border border-slate-800 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            />
+          </div>
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
@@ -78,6 +92,9 @@ export function Header() {
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
+          <button className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10">
+            <Bell className="h-5 w-5" />
+          </button>
         </div>
       </div>
 
@@ -89,22 +106,28 @@ export function Header() {
           className="md:hidden border-t border-white/10 bg-slate-900/95"
         >
           <nav className="flex flex-col p-4 gap-1">
-            {(["home", "crypto", "predictions"] as const).map((s) => (
+            {([
+              { label: "home", name: "🏠 Home" },
+              { label: "crypto", name: "₿ Crypto Bot" },
+              { label: "predictions", name: "🎯 Predictions" },
+              { label: "analytics", name: "📊 Analytics" },
+              { label: "trade-history", name: "📜 Trade History" },
+              { label: "hot-markets", name: "🔥 Hot Markets" },
+              { label: "my-positions", name: "💰 My Positions" },
+            ] as const).map((s) => (
               <button
-                key={s}
+                key={s.label}
                 onClick={() => {
-                  navigate(s)
+                  navigate(s.label)
                   setMobileMenuOpen(false)
                 }}
                 className={`px-4 py-3 rounded-lg text-sm font-medium text-left ${
-                  currentSection === s
+                  currentSection === s.label
                     ? "text-white bg-white/10"
                     : "text-slate-400 hover:text-white hover:bg-white/5"
                 }`}
               >
-                {s === "home" && "🏠 Home"}
-                {s === "crypto" && "₿ Crypto Bot"}
-                {s === "predictions" && "🎯 Predictions"}
+                {s.name}
               </button>
             ))}
           </nav>

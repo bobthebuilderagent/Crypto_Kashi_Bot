@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { predictionMarkets, mockPositions } from "@/data/mock"
-import { Target, TrendingUp, DollarSign, BarChart3, Search, Flame } from "lucide-react"
+import { Target, TrendingUp, DollarSign, BarChart3, Search, Flame, Plus, ArrowUpRight, ArrowDownRight, Wallet, Clock } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -14,11 +14,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
+import { Switch } from "@/components/ui/switch"
 
 export function PredictionsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("All")
-  const [marketType, setMarketType] = useState("markets")
+  const [activeTab, setActiveTab] = useState("markets")
 
   const filteredMarkets = predictionMarkets.filter((market) => {
     const matchesSearch = market.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -39,27 +40,27 @@ export function PredictionsPage() {
       <section className="px-4 pt-6 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[
-            { 
-              label: "Portfolio Value", 
-              value: `$${totalValue.toLocaleString()}`, 
+            {
+              label: "Portfolio Value",
+              value: `$${totalValue.toLocaleString()}`,
               icon: <DollarSign className="h-5 w-5 text-purple-400" />,
               color: "from-purple-600 to-pink-500"
             },
-            { 
-              label: "Total P&L", 
-              value: `${totalPnl > 0 ? "+" : ""}$${totalPnl.toLocaleString()}`, 
+            {
+              label: "Total P&L",
+              value: `${totalPnl > 0 ? "+" : ""}$${totalPnl.toLocaleString()}`,
               icon: <TrendingUp className={`h-5 w-5 ${totalPnl >= 0 ? "text-green-400" : "text-red-400"}`} />,
               color: totalPnl >= 0 ? "from-green-600 to-emerald-500" : "from-red-600 to-rose-500"
             },
-            { 
-              label: "Active Positions", 
-              value: mockPositions.length.toString(), 
+            {
+              label: "Active Positions",
+              value: mockPositions.length.toString(),
               icon: <BarChart3 className="h-5 w-5 text-cyan-400" />,
               color: "from-cyan-600 to-blue-500"
             },
-            { 
-              label: "Win Rate", 
-              value: `${(75 + Math.random() * 10).toFixed(1)}%`, 
+            {
+              label: "Win Rate",
+              value: "81.3%",
               icon: <Target className="h-5 w-5 text-amber-400" />,
               color: "from-amber-600 to-yellow-500"
             },
@@ -102,9 +103,9 @@ export function PredictionsPage() {
           </div>
         </motion.div>
 
-        {/* Market Feed Controls */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-2">
+        {/* Header + Tabs together */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+          <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold text-white">Prediction Markets</h2>
             <Badge variant="outline" className="border-purple-500/50 text-purple-400">
               {filteredMarkets.length} Markets
@@ -120,7 +121,7 @@ export function PredictionsPage() {
                 className="pl-9 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500"
               />
             </div>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <Select value={categoryFilter} onValueChange={(value) => setCategoryFilter(value as string)}>
               <SelectTrigger className="w-full sm:w-[140px] bg-slate-900/50 border-slate-700 text-white">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
@@ -133,62 +134,165 @@ export function PredictionsPage() {
                 <SelectItem value="Tech">Tech</SelectItem>
               </SelectContent>
             </Select>
+
+            {/* Enter Position Dialog */}
             <Dialog>
-              <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-purple-600 to-pink-500 border-0 text-white hover:from-purple-500 hover:to-pink-400">
-                  <Flame className="mr-1 h-4 w-4" /> Create Market
-                </Button>
+              <DialogTrigger
+                render={
+                  <Button className="bg-gradient-to-r from-green-600 to-emerald-500 border-0 text-white hover:from-green-500 hover:to-emerald-400" />
+                }
+              >
+                <Plus className="mr-1 h-4 w-4" /> Enter Position
               </DialogTrigger>
-              <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-2xl">
+              <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg">
                 <DialogHeader>
-                  <DialogTitle>Create New Prediction Market</DialogTitle>
+                  <DialogTitle>Enter Prediction Position</DialogTitle>
                   <DialogDescription className="text-slate-400">
-                    Set up a new prediction market for your community or audience.
+                    Place a trade on an active prediction market.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div>
-                    <Label className="text-sm text-slate-400 mb-1 block">Market Title</Label>
-                    <Input placeholder="Will X happen by date?" className="bg-slate-800 border-slate-700 text-white" />
+                    <Label className="text-sm text-slate-400 mb-1 block">Market</Label>
+                    <Select defaultValue="mkt-1">
+                      <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                        <SelectValue placeholder="Select market" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {predictionMarkets.map(m => (
+                          <SelectItem key={m.id} value={m.id}>{m.title}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-sm text-slate-400 mb-1 block">Category</Label>
-                      <Select defaultValue="finance">
+                      <Label className="text-sm text-slate-400 mb-1 block">Side</Label>
+                      <Select defaultValue="yes">
                         <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                          <SelectValue placeholder="Select" />
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="crypto">Crypto</SelectItem>
-                          <SelectItem value="finance">Finance</SelectItem>
-                          <SelectItem value="politics">Politics</SelectItem>
-                          <SelectItem value="sports">Sports</SelectItem>
-                          <SelectItem value="tech">Tech</SelectItem>
+                          <SelectItem value="yes">✅ Yes</SelectItem>
+                          <SelectItem value="no">❌ No</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-sm text-slate-400 mb-1 block">Market Type</Label>
+                      <Label className="text-sm text-slate-400 mb-1 block">Platform</Label>
                       <Select defaultValue="kashi">
                         <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                          <SelectValue placeholder="Select" />
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="kashi">Kashi (NFT-backed)</SelectItem>
-                          <SelectItem value="polymarket">Polymarket</SelectItem>
+                          <SelectItem value="kashi">🎨 Kashi</SelectItem>
+                          <SelectItem value="polymarket">🌐 Polymarket</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-sm text-slate-400 mb-1 block">Closing Date</Label>
-                      <Input type="date" className="bg-slate-800 border-slate-700 text-white" />
+                      <Label className="text-sm text-slate-400 mb-1 block">Shares</Label>
+                      <Input type="number" placeholder="1000" className="bg-slate-800 border-slate-700 text-white" />
                     </div>
                     <div>
-                      <Label className="text-sm text-slate-400 mb-1 block">Starting Price</Label>
-                      <Slider defaultValue={[50]} max={100} step={1} className="bg-slate-800 border-slate-700 text-white" />
+                      <Label className="text-sm text-slate-400 mb-1 block">Limit Price (¢)</Label>
+                      <Input type="number" placeholder="65" className="bg-slate-800 border-slate-700 text-white" />
                     </div>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50">
+                    <div>
+                      <div className="font-medium text-white">Set Stop Loss</div>
+                      <div className="text-sm text-slate-400">Auto-sell if price drops below threshold</div>
+                    </div>
+                    <Switch className="data-[state=checked]:bg-red-500" />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50">
+                    <div>
+                      <div className="font-medium text-white">Set Take Profit</div>
+                      <div className="text-sm text-slate-400">Auto-sell when target profit is reached</div>
+                    </div>
+                    <Switch className="data-[state=checked]:bg-green-500" />
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Create Bot Dialog */}
+            <Dialog>
+              <DialogTrigger
+                render={
+                  <Button className="bg-gradient-to-r from-purple-600 to-pink-500 border-0 text-white hover:from-purple-500 hover:to-pink-400" />
+                }
+              >
+                <Flame className="mr-1 h-4 w-4" /> Create Bot
+              </DialogTrigger>
+              <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Create Prediction Bot</DialogTitle>
+                  <DialogDescription className="text-slate-400">
+                    Automate your prediction market trading with smart strategies.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div>
+                    <Label className="text-sm text-slate-400 mb-1 block">Bot Name</Label>
+                    <Input placeholder="My Prediction Bot" className="bg-slate-800 border-slate-700 text-white" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm text-slate-400 mb-1 block">Target Market</Label>
+                      <Select defaultValue="mkt-1">
+                        <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                          <SelectValue placeholder="Select market" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {predictionMarkets.map(m => (
+                            <SelectItem key={m.id} value={m.id}>{m.title}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-400 mb-1 block">Strategy</Label>
+                      <Select defaultValue="martingale">
+                        <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="martingale">Martingale (Double Down)</SelectItem>
+                          <SelectItem value="spread">Spread Trading</SelectItem>
+                          <SelectItem value="momentum">Momentum / Trend</SelectItem>
+                          <SelectItem value="contrarian">Contrarian</SelectItem>
+                          <SelectItem value="dca">DCA into Position</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm text-slate-400 mb-1 block">Max Budget ($)</Label>
+                      <Input type="number" placeholder="500" className="bg-slate-800 border-slate-700 text-white" />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-400 mb-1 block">Max Shares per Trade</Label>
+                      <Input type="number" placeholder="200" className="bg-slate-800 border-slate-700 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50">
+                    <div>
+                      <div className="font-medium text-white">Auto Stop Loss</div>
+                      <div className="text-sm text-slate-400">Kill bot if portfolio drops below threshold</div>
+                    </div>
+                    <Switch className="data-[state=checked]:bg-red-500" />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50">
+                    <div>
+                      <div className="font-medium text-white">Enable Live Trading</div>
+                      <div className="text-sm text-slate-400">Start placing real trades immediately</div>
+                    </div>
+                    <Switch className="data-[state=checked]:bg-purple-600" />
                   </div>
                 </div>
               </DialogContent>
@@ -196,18 +300,16 @@ export function PredictionsPage() {
           </div>
         </div>
 
-        {/* Markets List */}
-        <Tabs defaultValue="markets" className="mb-6">
-          <div className="flex items-center gap-4 mb-4">
-            <TabsList className="bg-slate-800/50 border border-slate-700">
-              <TabsTrigger value="markets" className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-500">
-                Markets
-              </TabsTrigger>
-              <TabsTrigger value="positions" className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-500">
-                My Positions
-              </TabsTrigger>
-            </TabsList>
-          </div>
+        {/* Tabs directly under the title */}
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as string)} className="mb-6 flex flex-col">
+          <TabsList className="bg-slate-800/50 border border-slate-700 mb-4">
+            <TabsTrigger value="markets" className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-500">
+              Markets
+            </TabsTrigger>
+            <TabsTrigger value="positions" className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-500">
+              My Positions
+            </TabsTrigger>
+          </TabsList>
 
           <TabsContent value="markets">
             <div className="grid gap-4">
@@ -250,7 +352,7 @@ export function PredictionsPage() {
                               <div className="text-xs text-slate-400">No</div>
                             </div>
                             <div className="w-2 h-20 bg-slate-800 rounded-full overflow-hidden">
-                              <div 
+                              <div
                                 className="bg-gradient-to-t from-green-500 to-green-400 rounded-full"
                                 style={{ height: `${market.yesPrice * 100}%`, marginTop: 'auto' }}
                               />
@@ -270,42 +372,59 @@ export function PredictionsPage() {
 
           <TabsContent value="positions">
             <div className="grid gap-4">
-              {mockPositions.map((position, i) => (
-                <motion.div
-                  key={position.id}
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: i * 0.1 }}
-                >
-                  <Card className="bg-slate-900/50 backdrop-blur border-slate-700 hover:border-green-500/50 transition-colors">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge variant={position.side === "yes" ? "default" : "secondary"} 
-                                   className={`${position.side === "yes" ? "bg-green-500/20 text-green-400 border-0" : "bg-red-500/20 text-red-400 border-0"}`}>
-                              {position.side.toUpperCase()}
-                            </Badge>
-                            <span className="text-xs text-slate-400">{position.shares} shares @ ${(position.price * 100).toFixed(0)}¢</span>
+              {mockPositions.length === 0 ? (
+                <Card className="bg-slate-900/50 border-slate-700">
+                  <CardContent className="p-8 text-center">
+                    <Wallet className="h-12 w-12 text-slate-600 mx-auto mb-3" />
+                    <h3 className="text-lg font-semibold text-slate-400 mb-1">No Positions Yet</h3>
+                    <p className="text-sm text-slate-500">Enter a position from the Markets tab to get started.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                mockPositions.map((position, i) => (
+                  <motion.div
+                    key={position.id}
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: i * 0.1 }}
+                  >
+                    <Card className="bg-slate-900/50 backdrop-blur border-slate-700 hover:border-green-500/50 transition-colors">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge variant={position.side === "yes" ? "default" : "secondary"}
+                                className={`${position.side === "yes" ? "bg-green-500/20 text-green-400 border-0" : "bg-red-500/20 text-red-400 border-0"}`}>
+                                {position.side.toUpperCase()}
+                              </Badge>
+                              <span className="text-xs text-slate-400">{position.shares} shares @ ${(position.price * 100).toFixed(0)}¢</span>
+                            </div>
+                            <h3 className="font-semibold text-white mb-1">{position.marketTitle}</h3>
+                            <div className="text-xs text-slate-400">Current value: ${position.currentValue.toLocaleString()}</div>
                           </div>
-                          <h3 className="font-semibold text-white mb-1">{position.marketTitle}</h3>
-                          <div className="text-xs text-slate-400">Current value: ${position.currentValue.toLocaleString()}</div>
+                          <div className="flex items-center gap-4 ml-4">
+                            <div className="text-right">
+                              <div className={`text-lg font-bold ${position.pnl >= 0 ? "text-green-400" : "text-red-400"}`}>
+                                {position.pnl > 0 ? "+" : ""}${position.pnl.toLocaleString()}
+                              </div>
+                              <div className="text-xs text-slate-400">P&L</div>
+                            </div>
+                            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
+                              Close
+                            </Button>
+                          </div>
                         </div>
-                        <div className="text-right ml-4">
-                          <div className="text-lg font-bold">{position.pnl > 0 ? "+" : ""}${position.pnl.toLocaleString()}</div>
-                          <div className="text-xs text-slate-400">P&L</div>
+                        <div className="mt-3">
+                          <Progress
+                            value={(position.currentValue / (position.currentValue - position.pnl)) * 100}
+                            className="h-2 bg-slate-800"
+                          />
                         </div>
-                      </div>
-                      <div className="mt-3">
-                        <Progress 
-                          value={(position.currentValue / (position.currentValue - position.pnl)) * 100} 
-                          className="h-2 bg-slate-800" 
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))
+              )}
             </div>
           </TabsContent>
         </Tabs>

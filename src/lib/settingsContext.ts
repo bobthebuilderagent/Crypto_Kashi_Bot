@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, useCallback } from 'react'
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react'
 
 // ─── CEX ───────────────────────────────────────────────
 // US-accessible centralized exchanges
@@ -34,7 +34,6 @@ export interface DEXConnection {
   asset: string
   symbol: string
   dex: string
-  id: string
   icon: string
   connected: boolean
   walletAddress?: string
@@ -88,9 +87,170 @@ export const DEFAULT_PREDICTION_PLATFORMS: PredictionConnection[] = [
 interface SettingsContextType {
   // CEX
   cexConnections: CEXConnection[]
-  setCexConnections: (conns: CEXConnection[]) void
+  setCexConnections: (conns: CEXConnection[]) => void
   addCexConnection: (conn: Omit<CEXConnection, 'apiKey' | 'apiSecret' | 'apiKeyId' | 'connected'>) => void
   removeCexConnection: (id: string) => void
   updateCexField: (id: string, field: 'apiKey' | 'apiSecret' | 'apiKeyId' | 'connected', value: string | boolean) => void
   testCexConnection: (id: string) => Promise<boolean>
+
+  // DEX
+  dexConnections: DEXConnection[]
+  setDexConnections: (conns: DEXConnection[]) => void
+  addDexConnection: (conn: Omit<DEXConnection, 'connected' | 'walletAddress' | 'rpcUrl'>) => void
+  removeDexConnection: (id: string) => void
+  updateDexField: (id: string, field: 'walletAddress' | 'rpcUrl', value: string) => void
+
+  // Prediction
+  predictionPlatforms: PredictionConnection[]
+  setPredictionPlatforms: (platforms: PredictionConnection[]) => void
+  addPredictionPlatform: (platform: Omit<PredictionConnection, 'connected'>) => void
+  removePredictionPlatform: (id: string) => void
+  updatePredictionField: (id: string, field: 'apiKey' | 'token' | 'walletAddress', value: string) => void
+  testPredictionConnection: (id: string) => Promise<boolean>
+}
+
+export const SettingsContext = createContext<SettingsContextType>({} as SettingsContextType)
+
+// ─── Storage Helpers ─────────────────────────────────────────────────────────────────────
+const STORAGE_KEYS = {
+  CEX: 'crypto_kashi_bot_cex_connections',
+  DEX: 'crypto_kashi_bot_dex_connections',
+  PREDICTION: 'crypto_kashi_bot_prediction_platforms',
+}
+
+function loadFromStorage<T>(key: string, defaultValue: T): T {
+  try {
+    const item = localStorage.getItem(key)
+    return item ? (JSON.parse(item) as T) : defaultValue
+  } catch {
+    return defaultValue
+  }
+}
+
+function saveToStorage<T>(key: string, value: T): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch (e) {
+    console.warn('Failed to save to localStorage:', e)
+  }
+}
+
+// ─── Provider ────────────────────────────────────────────────────────────────────────────
+export function SettingsProvider({ children }: { children: React.ReactNode }) {
+  // CEX connections - persist to localStorage
+  const [cexConnections, setCexConnections] = useState<CEXConnection[]>(
+    () => loadFromStorage<CEXConnection[]>(STORAGE_KEYS.CEX, [])
+  )
+
+  // DEX connections - persist to localStorage
+  const [dexConnections, setDexConnections] = useState<DEXConnection[]>(
+    () => loadFromStorage<DEXConnection[]>(STORAGE_KEYS.DEX, [])
+  )
+
+  // Prediction platforms - persist to localStorage
+  const [predictionPlatforms, setPredictionPlatforms] = useState<PredictionConnection[]>(
+    () => loadFromStorage<PredictionConnection[]>(STORAGE_KEYS.PREDICTION, DEFAULT_PREDICTION_PLATFORMS)
+  )
+
+  // Persist CEX connections to localStorage
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.CEX, cexConnections)
+  }, [cexConnections])
+
+  // Persist DEX connections to localStorage
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.DEX, dexConnections)
+  }, [dexConnections])
+
+  // Persist prediction platforms to localStorage
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.PREDICTION, predictionPlatforms)
+  }, [predictionPlatforms])
+
+  const addCexConnection = useCallback((conn: Omit<CEXConnection, 'apiKey' | 'apiSecret' | 'apiKeyId' | 'connected'>) => {
+    setCexConnections(prev => [...prev, { ...conn, apiKey: '', apiSecret: '', apiKeyId: undefined, connected: false }])
+  }, [])
+
+  const removeCexConnection = useCallback((id: string) => {
+    setCexConnections(prev => prev.filter(c => c.id !== id))
+  }, [])
+
+  const updateCexField = useCallback((id: string, field: 'apiKey' | 'apiSecret' | 'apiKeyId' | 'connected', value: string | boolean) => {
+    setCexConnections(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c))
+  }, [])
+
+  // DEX
+  const addDexConnection = useCallback((conn: Omit<DEXConnection, 'connected' | 'walletAddress' | 'rpcUrl'>) => {
+    setDexConnections(prev => [...prev, { ...conn, connected: false, walletAddress: '', rpcUrl: '' }])
+  }, [])
+
+  const removeDexConnection = useCallback((id: string) => {
+    setDexConnections(prev => prev.filter(d => d.id !== id))
+  }, [])
+
+  const updateDexField = useCallback((id: string, field: 'walletAddress' | 'rpcUrl', value: string) => {
+    setDexConnections(prev => prev.map(d => d.id === id ? { ...d, [field]: value } : d))
+  }, [])
+
+  // Prediction
+  const addPredictionPlatform = useCallback((platform: Omit<PredictionConnection, 'connected'>) => {
+    setPredictionPlatforms(prev => [...prev, { ...platform, connected: false, apiKey: '' }])
+  }, [])
+
+  const removePredictionPlatform = useCallback((id: string) => {
+    setPredictionPlatforms(prev => prev.filter(p => p.id !== id))
+  }, [])
+
+  const updatePredictionField = useCallback((id: string, field: 'apiKey' | 'token' | 'walletAddress', value: string) => {
+    setPredictionPlatforms(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p))
+  }, [])
+
+  // Mock connection test
+  const testCexConnection = useCallback(async (id: string) => {
+    // Mock implementation - replace with actual API call
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(true), 1000)
+    })
+  }, [])
+
+  const testPredictionConnection = useCallback(async (id: string) => {
+    // Mock implementation - replace with actual API call
+    return new Promise(resolve => setTimeout(() => resolve(true), 1000))
+  }, [])
+
+  return (
+    <SettingsContext.Provider value= {{
+    // CEX
+    cexConnections,
+      setCexConnections,
+      addCexConnection,
+      removeCexConnection,
+      updateCexField,
+      testCexConnection,
+      // DEX
+      dexConnections,
+      setDexConnections,
+      addDexConnection,
+      removeDexConnection,
+      updateDexField,
+      // Prediction
+      predictionPlatforms,
+      setPredictionPlatforms,
+      addPredictionPlatform,
+      removePredictionPlatform,
+      updatePredictionField,
+      testPredictionConnection
+  }
+}
+  }>
+  </SettingsContext.Provider>
+  )
+}
+
+export function useSettingsContext() {
+  const context = useContext(SettingsContext)
+  if (!context) {
+    throw new Error('useSettingsContext must be used within a SettingsProvider')
+  }
+  return context
 }
