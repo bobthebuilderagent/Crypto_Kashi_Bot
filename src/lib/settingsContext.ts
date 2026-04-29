@@ -111,7 +111,7 @@ interface SettingsContextType {
 
 export const SettingsContext = createContext<SettingsContextType>({} as SettingsContextType)
 
-// ─── Storage Helpers ─────────────────────────────────────────────────────────────────────
+// ─── Storage Helpers ─────────────────────────────────────────────────────────────
 const STORAGE_KEYS = {
   CEX: 'crypto_kashi_bot_cex_connections',
   DEX: 'crypto_kashi_bot_dex_connections',
@@ -135,7 +135,7 @@ function saveToStorage<T>(key: string, value: T): void {
   }
 }
 
-// ─── Provider ────────────────────────────────────────────────────────────────────────────
+// ─── Provider ──────────────────────────────────────────────────────────────────────
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   // CEX connections - persist to localStorage
   const [cexConnections, setCexConnections] = useState<CEXConnection[]>(
@@ -219,9 +219,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <SettingsContext.Provider value= {{
-    // CEX
-    cexConnections,
+    <SettingsContext.Provider value={{
+      // CEX
+      cexConnections,
       setCexConnections,
       addCexConnection,
       removeCexConnection,
@@ -240,10 +240,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       removePredictionPlatform,
       updatePredictionField,
       testPredictionConnection
-  }
-}
-  }>
-  </SettingsContext.Provider>
+    }}>
+      {children}
+    </SettingsContext.Provider>
   )
 }
 

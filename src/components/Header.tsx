@@ -37,16 +37,12 @@ export function Header() {
           </div>
         </div>
 
-        {/* Desktop Navigation */}
+       {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1">
           {([
             { label: "home", name: "🏠 Home" },
             { label: "crypto", name: "₿ Crypto Bot" },
             { label: "predictions", name: "🎯 Predictions" },
-            { label: "analytics", name: "📊 Analytics" },
-            { label: "trade-history", name: "📜 Trade History" },
-            { label: "hot-markets", name: "🔥 Hot Markets" },
-            { label: "my-positions", name: "💰 My Positions" },
           ] as const).map((s) => (
             <button
               key={s.label}
@@ -65,7 +61,6 @@ export function Header() {
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                 />
               )}
-              <span className="relative z-10"></span>
             </button>
           ))}
         </nav>
@@ -110,10 +105,6 @@ export function Header() {
               { label: "home", name: "🏠 Home" },
               { label: "crypto", name: "₿ Crypto Bot" },
               { label: "predictions", name: "🎯 Predictions" },
-              { label: "analytics", name: "📊 Analytics" },
-              { label: "trade-history", name: "📜 Trade History" },
-              { label: "hot-markets", name: "🔥 Hot Markets" },
-              { label: "my-positions", name: "💰 My Positions" },
             ] as const).map((s) => (
               <button
                 key={s.label}

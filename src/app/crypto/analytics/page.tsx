@@ -1,5 +1,7 @@
+"use client"
+
 import { AnalyticsPage } from "@/components/pages/AnalyticsPage"
 
-export default function AnalyticsPageRoute() {
+export default function AnalyticsPage() {
   return <AnalyticsPage />
 }

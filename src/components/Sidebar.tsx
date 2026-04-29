@@ -48,7 +48,19 @@ export function Sidebar({ activeSection }: { activeSection: 'crypto' | 'predicti
   const section = activeSection === 'crypto' ? cryptoSection : predictionsSection
 
   const handleNavClick = (path: string) => {
-    router.push(path)
+    // Map sidebar items to actual routes
+    const routeMap: Record<string, string> = {
+      'Bot Dashboard': '/crypto',
+      'Market Overview': '/crypto',
+      'Analytics': '/crypto/analytics',
+      'Trade History': '/crypto/trade-history',
+      'Settings': '/crypto',
+      'Market Feed': '/predictions',
+      'My Positions': '/predictions/my-positions',
+      'Upcoming Markets': '/predictions/hot-markets',
+      'Hot Markets': '/predictions/hot-markets',
+    }
+    router.push(routeMap[path] || `/${activeSection}`)
   }
 
   // Extract section from URL
@@ -67,7 +79,6 @@ export function Sidebar({ activeSection }: { activeSection: 'crypto' | 'predicti
         </h2>
         <nav className="space-y-1">
           {section.items.map((item, index) => {
-            // Determine if this item is active
             const cryptoActive = currentSection === 'crypto' &&
               (pathname === '/crypto' || pathname?.includes('/crypto')) &&
               ['Bot Dashboard', 'Market Overview', 'Analytics', 'Trade History', 'Settings'].includes(item.label)
@@ -102,7 +113,6 @@ export function Sidebar({ activeSection }: { activeSection: 'crypto' | 'predicti
         </nav>
       </div>
 
-      {/* Search Bar */}
       <div className="mt-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
@@ -114,7 +124,6 @@ export function Sidebar({ activeSection }: { activeSection: 'crypto' | 'predicti
         </div>
       </div>
 
-      {/* Quick Actions */}
       <div className="mt-4">
         <div className="relative">
           <Bell className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
