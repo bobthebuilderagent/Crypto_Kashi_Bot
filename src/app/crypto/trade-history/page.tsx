@@ -2,6 +2,6 @@
 
 import { TradeHistoryPage } from "@/components/pages/TradeHistoryPage"
 
-export default function TradeHistoryPage() {
+export default function TradeHistoryPageRoute() {
   return <TradeHistoryPage />
 }

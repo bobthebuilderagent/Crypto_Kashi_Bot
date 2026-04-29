@@ -2,6 +2,6 @@
 
 import { MyPositionsPage } from "@/components/pages/MyPositionsPage"
 
-export default function MyPositionsPage() {
+export default function MyPositionsPageRoute() {
   return <MyPositionsPage />
 }
