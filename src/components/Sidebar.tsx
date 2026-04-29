@@ -47,8 +47,8 @@ export function Sidebar({ activeSection }: { activeSection: 'crypto' | 'predicti
   const pathname = usePathname()
   const section = activeSection === 'crypto' ? cryptoSection : predictionsSection
 
-  const handleNavClick = (path: string) => {
-    // Map sidebar items to actual routes
+  const handleNavClick = (label: string) => {
+    // Map sidebar item labels to actual routes
     const routeMap: Record<string, string> = {
       'Bot Dashboard': '/crypto',
       'Market Overview': '/crypto/market-overview',
@@ -60,7 +60,10 @@ export function Sidebar({ activeSection }: { activeSection: 'crypto' | 'predicti
       'Upcoming Markets': '/predictions/upcoming-markets',
       'Hot Markets': '/predictions/hot-markets',
     }
-    router.push(routeMap[path] || `/${activeSection}`)
+    const targetPath = routeMap[label] || `/${activeSection}`
+    if (targetPath !== pathname) {
+      router.push(targetPath)
+    }
   }
 
   // Extract section from URL
@@ -94,7 +97,7 @@ export function Sidebar({ activeSection }: { activeSection: 'crypto' | 'predicti
                 initial={{ x: -10, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: index * 0.05 }}
-                onClick={() => handleNavClick(`/${activeSection}/${item.label.replace(/\s+/g, '')}`)}
+                onClick={() => handleNavClick(item.label)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all text-left ${isActive
                     ? 'text-white bg-white/10 font-medium'
                     : 'text-slate-400 hover:text-white hover:bg-white/5'
