@@ -45,17 +45,17 @@ docker run -d \
   -p 11434:11434 \
   -v "/mnt/c/Users/Matthias/Desktop/Hermes Agent/ollama_data:/models" \
   ghcr.io/ggml-org/llama.cpp:server-cuda \
-  -m /models/Qwen3.6-35B-A3B-UD-IQ2_XXS.gguf \
+  -m /models/Qwen3.5-9B-DeepSeek-V4-Flash.Q6_K.gguf \
   --ctx-size 131072 \
-  --cache-type-k q8_0 \
-  --cache-type-v q8_0 \
-  --n-gpu-layers 99 \
+  --cache-type-k q4_0 \
+  --cache-type-v q4_0 \
+  --n-gpu-layers 50 \
   --fit on \
-  --fit-target 1024 \
+  --fit-target 0 \
   --flash-attn on \
   --cont-batching \
-  --batch-size 16 \
-  --ubatch-size 16 \
+  --batch-size 8 \
+  --ubatch-size 8 \
   --host 0.0.0.0 \
   --port 11434
 

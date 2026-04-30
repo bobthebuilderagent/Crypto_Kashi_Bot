@@ -16,6 +16,7 @@ Unified crypto trading bot and prediction markets dashboard.
 | 3 | Apr 27, 2026 | Navigation setup + debugging fixes |
 | 4 | Apr 29, 2026 | Settings page redesign — removed duplicates, consistent sidebar layout |
 | 5 | Apr 29, 2026 | TypeScript fixes — Slider component, createContext, file extension rename, Promise types |
+| 6 | Apr 30, 2026 | ExchangeType context — added CEX/DEX toggle state to AppProvider, persists across all crypto pages |
 
 ---
 
@@ -210,6 +211,18 @@ Both settings pages now use a consistent professional layout.
 **Error:** `testCexConnection` and `testPredictionConnection` return `Promise<unknown>` instead of `Promise<boolean>`
 **Fix:** Lines 229 & 242 — Added explicit `: Promise<boolean>` return types and `new Promise<boolean>()` type parameters
 
+### Session 6 - ExchangeType Context (April 30, 2026)
+
+#### **Feature: CEX/DEX Exchange Type State Management**
+**Goal:** Persist CEX/DEX toggle state across all crypto pages so users don't lose their exchange type when navigating
+**Fix:** Modified `src/lib/providers.tsx`:
+- Added `type ExchangeType = 'cex' | 'dex'` type definition
+- Added `exchangeType: ExchangeType` and `setExchangeType: (type: ExchangeType) => void` to `AppContextType` interface
+- Added `const [exchangeType, setExchangeType] = useState<ExchangeType>('cex')` to `AppProvider`
+- Added `exchangeType` and `setExchangeType` to the context provider value
+**Status:** TypeScript compiles cleanly, no errors
+**Next:** Add CEX/DEX toggle component to crypto layout (Step 2)
+
 ---
 
 ## 🔗 Key Files Reference
@@ -240,5 +253,5 @@ After that, implement the trading bot logic on the `/crypto` page as the core fe
 
 ---
 
-*Last updated: April 29, 2026*
-*Session count: 5*
+*Last updated: April 30, 2026*
+*Session count: 6*
