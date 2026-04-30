@@ -8,7 +8,7 @@ import { LiveTicker } from "@/components/LiveTicker"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Crypto+Kashi - Trading Dashboard",
+  title: "Crypto+Predictions - Trading Dashboard",
   description: "Unified crypto trading bot and prediction markets dashboard",
 }
 

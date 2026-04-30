@@ -19,10 +19,10 @@ export const mockBots = [
 
 export const predictionMarkets = [
   { id: 'mkt-1', title: 'Will BTC hit $100k by EOY 2026?', platform: 'polymarket', category: 'Crypto', yesPrice: 0.72, noPrice: 0.28, volume: '$2.3M', closeDate: 'Dec 31, 2026', liquidity: '$890K' },
-  { id: 'mkt-2', title: 'S&P 500 to break 6000 in May?', platform: 'kashi', category: 'Finance', yesPrice: 0.45, noPrice: 0.55, volume: '$567K', closeDate: 'May 31, 2026', liquidity: '$234K' },
+  { id: 'mkt-2', title: 'S&P 500 to break 6000 in May?', platform: 'kalshi', category: 'Finance', yesPrice: 0.45, noPrice: 0.55, volume: '$567K', closeDate: 'May 31, 2026', liquidity: '$234K' },
   { id: 'mkt-3', title: 'ETH ETF approved in 2026', platform: 'polymarket', category: 'Finance', yesPrice: 0.89, noPrice: 0.11, volume: '$1.2M', closeDate: 'Jun 30, 2026', liquidity: '$456K' },
-  { id: 'mkt-4', title: 'Next Fed rate cut in April?', platform: 'kashi', category: 'Finance', yesPrice: 0.34, noPrice: 0.66, volume: '$890K', closeDate: 'Apr 30, 2026', liquidity: '$123K' },
-  { id: 'mkt-5', title: 'Bitcoin halving impact positive?', platform: 'kashi', category: 'Crypto', yesPrice: 0.56, noPrice: 0.44, volume: '$345K', closeDate: 'Mar 31, 2026', liquidity: '$67K' },
+  { id: 'mkt-4', title: 'Next Fed rate cut in April?', platform: 'kalshi', category: 'Finance', yesPrice: 0.34, noPrice: 0.66, volume: '$890K', closeDate: 'Apr 30, 2026', liquidity: '$123K' },
+  { id: 'mkt-5', title: 'Bitcoin halving impact positive?', platform: 'kalshi', category: 'Crypto', yesPrice: 0.56, noPrice: 0.44, volume: '$345K', closeDate: 'Mar 31, 2026', liquidity: '$67K' },
 ]
 
 export const mockPositions = [

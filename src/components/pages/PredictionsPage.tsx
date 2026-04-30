@@ -180,12 +180,12 @@ export function PredictionsPage() {
                     </div>
                     <div>
                       <Label className="text-sm text-slate-400 mb-1 block">Platform</Label>
-                      <Select defaultValue="kashi">
+                      <Select defaultValue="kalshi">
                         <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="kashi">🎨 Kashi</SelectItem>
+                          <SelectItem value="kalshi">🎨 Kalshi</SelectItem>
                           <SelectItem value="polymarket">🌐 Polymarket</SelectItem>
                         </SelectContent>
                       </Select>
@@ -330,8 +330,8 @@ export function PredictionsPage() {
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <Badge variant="outline" className="text-xs border-slate-600 text-slate-400">{market.category}</Badge>
-                              <Badge variant="outline" className={`text-xs ${market.platform === "kashi" ? "border-pink-500/50 text-pink-400" : "border-blue-500/50 text-blue-400"}`}>
-                                {market.platform === "kashi" ? "🎨 Kashi" : "🌐 Polymarket"}
+                              <Badge variant="outline" className={`text-xs ${market.platform === "kalshi" ? "border-pink-500/50 text-pink-400" : "border-blue-500/50 text-blue-400"}`}>
+                                {market.platform === "kalshi" ? "🎨 Kalshi" : "🌐 Polymarket"}
                               </Badge>
                               <span className="text-xs text-slate-500">•</span>
                               <span className="text-xs text-slate-400">{market.closeDate}</span>

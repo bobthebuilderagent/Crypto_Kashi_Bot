@@ -16,7 +16,7 @@ export function UpcomingMarketsPage() {
   const [filterPlatform, setFilterPlatform] = useState("all")
 
   const categories = ["all", "Finance", "Crypto", "Politics", "Sports", "Tech", "Economics", "Entertainment"]
-  const platforms = ["all", "Kashi", "Polymarket"]
+  const platforms = ["all", "Predictions", "Polymarket"]
 
   const filteredMarkets = predictionMarkets.filter(market => {
     const matchesSearch = market.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -137,8 +137,8 @@ export function UpcomingMarketsPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <Badge variant="outline" className="text-xs border-slate-600 text-slate-400">{market.category}</Badge>
-                      <Badge variant="outline" className={market.platform === "kashi" ? "border-pink-500/50 text-pink-400" : "border-blue-500/50 text-blue-400"}>
-                        {market.platform === "kashi" ? "🎨 Kashi" : "🌐 Polymarket"}
+                      <Badge variant="outline" className={market.platform === "kalshi" ? "border-pink-500/50 text-pink-400" : "border-blue-500/50 text-blue-400"}>
+                        {market.platform === "kalshi" ? "🎨 Kalshi" : "🌐 Polymarket"}
                       </Badge>
                     </div>
                     <h3 className="font-semibold text-white mb-2">{market.title}</h3>

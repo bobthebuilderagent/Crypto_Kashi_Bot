@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { Sidebar } from "@/components/Sidebar"
 
 export const metadata: Metadata = {
-  title: "Kashi Predictions - Market Feed",
+  title: "Predictions - Market Feed",
   description: "Prediction markets and trading dashboard",
 }
 

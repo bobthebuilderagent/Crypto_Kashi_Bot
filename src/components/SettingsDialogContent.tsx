@@ -428,7 +428,7 @@ export function SettingsDialog({ isOpen, onClose }: { isOpen: boolean; onClose: 
                 </p>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => addPrediction(PREDICTION_PRESETS.find(p => p.id === 'kashi')!)}
+                    onClick={() => addPrediction(PREDICTION_PRESETS.find(p => p.id === 'kalshi')!)}
                     className="px-3 py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg text-sm transition flex items-center gap-2"
                   >
                     <Plus className="h-4 w-4" />

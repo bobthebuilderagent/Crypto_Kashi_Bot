@@ -42,7 +42,7 @@ export function HotMarketsPage() {
       title: "Ethereum ETF approval Q3 2026",
       question: "Will the SEC approve a spot Ethereum ETF in Q3 2026?",
       category: "Ethereum",
-      platform: "Kashi",
+      platform: "Kalshi",
       yesPercent: 54,
       noPercent: 46,
       volume: 89000,
@@ -70,7 +70,7 @@ export function HotMarketsPage() {
       title: "Solana Firedancer upgrade June 2026",
       question: "Will Solana complete its Firedancer upgrade by June 2026?",
       category: "Solana",
-      platform: "Kashi",
+      platform: "Kalshi",
       yesPercent: 76,
       noPercent: 24,
       volume: 45000,
@@ -100,7 +100,7 @@ export function HotMarketsPage() {
   const [selectedPlatform, setSelectedPlatform] = useState("All")
 
   const categories = ["All", "Bitcoin", "Ethereum", "AI & Tech", "Solana", "Stocks", "NFTs", "Crypto"]
-  const platforms = ["All", "CoinGecko", "Kashi", "Polymarket", "Manifold"]
+  const platforms = ["All", "CoinGecko", "Kalshi", "Polymarket", "Manifold"]
 
   const filteredMarkets = markets.filter(m => {
     const matchesSearch = m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||

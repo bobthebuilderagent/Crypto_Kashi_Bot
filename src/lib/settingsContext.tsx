@@ -71,7 +71,7 @@ export const US_ACCESSIBLE_DEX: Omit<DEXConnection, 'connected' | 'walletAddress
 // ─── Prediction Platforms (unchanged) ----------
 export interface PredictionConnection {
   id: string
-  platform: 'kashi' | 'polymarket'
+  platform: 'kalshi' | 'polymarket'
   apiKey: string
   token?: string
   walletAddress?: string
@@ -79,7 +79,7 @@ export interface PredictionConnection {
 }
 
 export const DEFAULT_PREDICTION_PLATFORMS: PredictionConnection[] = [
-  { id: 'kashi', platform: 'kashi', apiKey: '', connected: false },
+  { id: 'kalshi', platform: 'kalshi', apiKey: '', connected: false },
   { id: 'polymarket', platform: 'polymarket', apiKey: '', connected: false },
 ]
 
@@ -109,13 +109,13 @@ interface SettingsContextType {
   testPredictionConnection: (id: string) => Promise<boolean>
 }
 
-export const SettingsContext = createContext<SettingsContextType>({} as SettingsContextType)
+export const SettingsContext = createContext<SettingsContextType | undefined>(undefined)
 
 // ─── Storage Helpers ─────────────────────────────────────────────────────────────
 const STORAGE_KEYS = {
-  CEX: 'crypto_kashi_bot_cex_connections',
-  DEX: 'crypto_kashi_bot_dex_connections',
-  PREDICTION: 'crypto_kashi_bot_prediction_platforms',
+  CEX: 'crypto_kalshi_bot_cex_connections',
+  DEX: 'crypto_kalshi_bot_dex_connections',
+  PREDICTION: 'crypto_kalshi_bot_prediction_platforms',
 }
 
 function loadFromStorage<T>(key: string, defaultValue: T): T {
@@ -206,16 +206,14 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   // Mock connection test
-  const testCexConnection = useCallback(async (id: string) => {
-    // Mock implementation - replace with actual API call
-    return new Promise((resolve) => {
+  const testCexConnection = useCallback(async (_id: string): Promise<boolean> => {
+    return new Promise<boolean>((resolve) => {
       setTimeout(() => resolve(true), 1000)
     })
   }, [])
 
-  const testPredictionConnection = useCallback(async (id: string) => {
-    // Mock implementation - replace with actual API call
-    return new Promise(resolve => setTimeout(() => resolve(true), 1000))
+  const testPredictionConnection = useCallback(async (_id: string): Promise<boolean> => {
+    return new Promise<boolean>((resolve) => setTimeout(() => resolve(true), 1000))
   }, [])
 
   return (

@@ -1,7 +1,7 @@
 "use client"
 
-import { PredictionsPage } from "@/components/pages/PredictionsPage"
+import { PredictionMarketPage } from "@/components/pages/PredictionMarketPage"
 
 export default function PredictionsView() {
-  return <PredictionsPage />
+  return <PredictionMarketPage />
 }

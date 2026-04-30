@@ -181,7 +181,7 @@ function PredictionCard({ conn, index }: { conn: any; index: number }) {
         </div>
       )}
       
-      <h4 className="font-semibold text-white mb-3">{conn.platform === 'kashi' ? '🎨 Kashi' : '🌐 Polymarket'}</h4>
+      <h4 className="font-semibold text-white mb-3">{conn.platform === 'predictions' ? '🌐 Predictions' : '🌐 Polymarket'}</h4>
       
       <div className="space-y-2">
         <div>

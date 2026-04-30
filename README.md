@@ -1,4 +1,4 @@
-# Crypto+Kashi - Trading Dashboard
+# Crypto+Kalshi - Trading Dashboard
 
 A unified crypto trading bot and prediction markets dashboard built with Next.js 16, React 19, and Tailwind CSS.
 
@@ -32,8 +32,8 @@ A unified crypto trading bot and prediction markets dashboard built with Next.js
 
 ```bash
 # Clone the repository
-git clone git@github.com:bobthebuilderagent/Crypto_Kashi_Bot.git
-cd Crypto_Kashi_Bot
+git clone git@github.com:bobthebuilderagent/Crypto_Kalshi_Bot.git
+cd Crypto_Kalshi_Bot
 
 # Install dependencies
 npm install
@@ -47,7 +47,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to see the d
 ## Project Structure
 
 ```
-Crypto_Kashi_Bot/
+Crypto_Kalshi_Bot/
 ├── src/
 │   ├── app/                    # Next.js App Router
 │   │   ├── layout.tsx          # Root layout (Header, Ticker, Provider)
@@ -62,7 +62,7 @@ Crypto_Kashi_Bot/
 │   │   │   ├── HomePage.tsx
 │   │   │   ├── CryptoBotPage.tsx
 │   │   │   ├── PredictionsPage.tsx
-│   │   │   └── KashiPredictionsPage.tsx
+│   │   │   └── KalshiPredictionsPage.tsx
 │   │   └── ui/                 # shadcn/ui components (30+)
 │   ├── lib/
 │   │   ├── providers.tsx       # App-level React context provider

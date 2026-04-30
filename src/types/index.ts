@@ -24,7 +24,7 @@ export interface BotConfig {
 export interface PredictionMarket {
   id: string
   title: string
-  platform: 'kashi' | 'polymarket'
+  platform: 'kalshi' | 'polymarket'
   category: string
   yesPrice: number
   noPrice: number

@@ -8,9 +8,9 @@
 
 | File | Lines | Description |
 |------|-------|-------------|
-| `MyPositionsPage.tsx` | ~370 | Kashi prediction positions tracking with P&L |
+| `MyPositionsPage.tsx` | ~370 | Kalshi prediction positions tracking with P&L |
 | `HotMarketsPage.tsx` | ~360 | Trending prediction markets with live updates |
-| `KashiSettingsPage.tsx` | ~480 | Multi-tab settings interface for Kashi platform |
+| `KalshiSettingsPage.tsx` | ~480 | Multi-tab settings interface for Kalshi platform |
 
 ### MyPositionsPage.tsx - Features
 - **Stats Bar**: Total invested, potential profit, winning bets, average ROI
@@ -28,7 +28,7 @@
 - **Market Cards**: Show YES/NO percentages, volume, participants, time remaining
 - **Visual Elements**: Progress bars for odds, gradient backgrounds
 
-### KashiSettingsPage.tsx - Features
+### KalshiSettingsPage.tsx - Features
 - **6 Tab Sections**:
   - **General**: Platform selection, profile name, timezone, email, auto-refresh
   - **Predictions**: Default/max amounts, auto-stake, risk level (1-10), bankroll usage
@@ -50,11 +50,11 @@
 | | Analytics | ✅ AnalyticsPage.tsx |
 | | Trade History | ✅ TradeHistoryPage.tsx |
 | | Settings | ✅ CryptoSettingsPage.tsx |
-| **Kashi Predictions** | Market Feed | ✅ KashiPredictionsPage.tsx |
+| **Kalshi Predictions** | Market Feed | ✅ KalshiPredictionsPage.tsx |
 | | My Positions | ✅ MyPositionsPage.tsx |
 | | Upcoming Markets | ✅ UpcomingMarketsPage.tsx |
 | | Hot Markets | ✅ HotMarketsPage.tsx |
-| | Settings | ✅ KashiSettingsPage.tsx |
+| | Settings | ✅ KalshiSettingsPage.tsx |
 
 **Total: 10 sidebar pages, all completed!** 🎉
 
@@ -65,7 +65,7 @@
 ### Files Created in This Session: 3
 - `MyPositionsPage.tsx` (~370 lines)
 - `HotMarketsPage.tsx` (~360 lines)
-- `KashiSettingsPage.tsx` (~480 lines)
+- `KalshiSettingsPage.tsx` (~480 lines)
 
 ### Total Lines Written: ~1,210 + 850 = **2,060 lines**
 

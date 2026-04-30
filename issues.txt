@@ -20,17 +20,53 @@ docker run -d \
   -p 11434:11434 \
   -v "/mnt/c/Users/Matthias/Desktop/Hermes Agent/ollama_data:/models" \
   ghcr.io/ggml-org/llama.cpp:server-cuda \
-  -m /models/Qwen3.5-9b-Sushi-Coder-RL.Q6_K.gguf \
-  -c 98304 \
-  -np 1 \
-  -ngl 99 \
-  --cache-type-k q4_0 \
-  --cache-type-v q4_0 \
-  -fa on \
+  -m /models/Qwen3.6-35B-A3B-MXFP4_MOE.gguf \
+  --ctx-size 65536 \
+  --cache-type-k q8_0 \
+  --cache-type-v q8_0 \
+  --cpu-moe \
+  --n-cpu-moe 4 \
+  --n-gpu-layers 99 \
+  --parallel 1 \
+  --batch-size 4 \
+  --ubatch-size 4 \
+  --fit on \
+  --fit-target 0 \
+  --flash-attn on \
+  --threads 6 \
+  --threads-batch 6 \
+  --host 0.0.0.0 \
+  --port 11434
+
+
+docker run -d \
+  --name hermes-brain \
+  --gpus all \
+  -p 11434:11434 \
+  -v "/mnt/c/Users/Matthias/Desktop/Hermes Agent/ollama_data:/models" \
+  ghcr.io/ggml-org/llama.cpp:server-cuda \
+  -m /models/Qwen3.6-35B-A3B-UD-IQ2_XXS.gguf \
+  --ctx-size 131072 \
+  --cache-type-k q8_0 \
+  --cache-type-v q8_0 \
+  --n-gpu-layers 99 \
+  --fit on \
+  --fit-target 1024 \
+  --flash-attn on \
+  --cont-batching \
+  --batch-size 16 \
+  --ubatch-size 16 \
   --host 0.0.0.0 \
   --port 11434
 
 systemctl --user restart hermes-gateway
 
+git -c core.sshCommand="ssh -i C:/Users/Matthias/.ssh/id_ed25519_bob" push origin main
+
+streamlit run llm-dashboard.py
+
 
 What up Murph! Lets get the new pages all connected now working ont eh sidebars for the pages, We need to take the ther pages you stuck at the top also gone, we just need home, crypto, and predictions at teh tpo. An than get them all inked up correclty now plesea. as im getting 400 erros on each page. Located here: :\Users\Matthias\Desktop\Crypto_Kashi_Bot\Crypto_Kashi_Bot
+
+
+

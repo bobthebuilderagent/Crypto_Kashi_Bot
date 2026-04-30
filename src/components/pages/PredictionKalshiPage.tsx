@@ -15,18 +15,18 @@ import { Slider } from "@/components/ui/slider"
 import { Progress } from "@/components/ui/progress"
 import { predictionMarkets, mockPositions } from "@/data/mock"
 
-export function KashiPredictionsPage() {
+export function KalshiPredictionsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterCategory, setFilterCategory] = useState("all")
   const [filterPlatform, setFilterPlatform] = useState("all")
   const [isFilterOpen, setIsFilterOpen] = useState(false)
 
   const categories = ["all", "Finance", "Crypto", "Politics", "Sports", "Tech", "Economics", "Entertainment"]
-  const platforms = ["all", "Kashi", "Polymarket"]
+  const platforms = ["all", "Kalshi", "Polymarket"]
 
   const filteredMarkets = predictionMarkets.filter(market => {
     const matchesSearch = market.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          market.category.toLowerCase().includes(searchTerm.toLowerCase())
+      market.category.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = filterCategory === "all" || market.category.toLowerCase() === filterCategory.toLowerCase()
     const matchesPlatform = filterPlatform === "all" || market.platform === filterPlatform.toLowerCase()
     return matchesSearch && matchesCategory && matchesPlatform
@@ -41,8 +41,8 @@ export function KashiPredictionsPage() {
     >
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white mb-2">Kashi Predictions</h1>
-        <p className="text-slate-400">Trade prediction assets on NFT-backed Kashi markets</p>
+        <h1 className="text-3xl font-bold text-white mb-2">Kalshi Predictions</h1>
+        <p className="text-slate-400">Trade prediction assets on NFT-backed Kalshi markets</p>
       </div>
 
       {/* Stats bar */}
@@ -98,8 +98,8 @@ export function KashiPredictionsPage() {
         <div className="flex items-center gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input 
-              placeholder="Search markets..." 
+            <Input
+              placeholder="Search markets..."
               className="w-80 bg-slate-900/50 border-slate-700 pl-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -139,13 +139,13 @@ export function KashiPredictionsPage() {
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="kashi">Kashi (NFT-backed)</SelectItem>
+                    <SelectItem value="kalshi">Kalshi (NFT-backed)</SelectItem>
                     <SelectItem value="polymarket">Polymarket</SelectItem>
                   </Select>
                 </div>
               </div>
               <div className="flex justify-end gap-2 mt-4">
-                <Button variant="outline" className="border-slate-700" onClick={() => {setFilterCategory("all"); setFilterPlatform("all"); setSearchTerm("");}}>
+                <Button variant="outline" className="border-slate-700" onClick={() => { setFilterCategory("all"); setFilterPlatform("all"); setSearchTerm(""); }}>
                   Clear All
                 </Button>
                 <Button className="bg-gradient-to-r from-purple-600 to-pink-500" onClick={() => setIsFilterOpen(false)}>
@@ -169,7 +169,7 @@ export function KashiPredictionsPage() {
               <DialogHeader>
                 <DialogTitle>Create New Prediction Market</DialogTitle>
                 <DialogDescription className="text-slate-400">
-                  Set up a new market with NFT-backed assets via Kashi
+                  Set up a new market with NFT-backed assets via Kalshi
                 </DialogDescription>
               </DialogHeader>
               <div className="grid grid-cols-2 gap-4">
@@ -194,12 +194,12 @@ export function KashiPredictionsPage() {
                 </div>
                 <div>
                   <Label className="text-sm text-slate-400 mb-1 block">Market Type</Label>
-                  <Select defaultValue="kashi">
+                  <Select defaultValue="kalshi">
                     <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="kashi">Kashi (NFT-backed)</SelectItem>
+                      <SelectItem value="kalshi">Kalshi (NFT-backed)</SelectItem>
                       <SelectItem value="polymarket">Polymarket</SelectItem>
                     </SelectContent>
                   </Select>
@@ -252,8 +252,8 @@ export function KashiPredictionsPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <Badge variant="outline" className="text-xs border-slate-600 text-slate-400">{market.category}</Badge>
-                            <Badge variant="outline" className={market.platform === "kashi" ? "border-pink-500/50 text-pink-400" : "border-blue-500/50 text-blue-400"}>
-                              {market.platform === "kashi" ? "🎨 Kashi" : "🌐 Polymarket"}
+                            <Badge variant="outline" className={market.platform === "kalshi" ? "border-pink-500/50 text-pink-400" : "border-blue-500/50 text-blue-400"}>
+                              {market.platform === "kalshi" ? "🎨 Kalshi" : "🌐 Polymarket"}
                             </Badge>
                             <span className="text-xs text-slate-500">•</span>
                             <span className="text-xs text-slate-400">{market.closeDate}</span>
@@ -274,7 +274,7 @@ export function KashiPredictionsPage() {
                             <div className="text-xs text-slate-400">No</div>
                           </div>
                           <div className="w-2 h-20 bg-slate-800 rounded-full overflow-hidden">
-                            <div 
+                            <div
                               className="bg-gradient-to-t from-green-500 to-green-400 rounded-full"
                               style={{ height: `${market.yesPrice * 100}%`, marginTop: 'auto' }}
                             />
@@ -306,8 +306,8 @@ export function KashiPredictionsPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <Badge variant={position.side === "yes" ? "default" : "secondary"} 
-                                 className={`${position.side === "yes" ? "bg-green-500/20 text-green-400 border-0" : "bg-red-500/20 text-red-400 border-0"}`}>
+                          <Badge variant={position.side === "yes" ? "default" : "secondary"}
+                            className={`${position.side === "yes" ? "bg-green-500/20 text-green-400 border-0" : "bg-red-500/20 text-red-400 border-0"}`}>
                             {position.side.toUpperCase()}
                           </Badge>
                           <span className="text-xs text-slate-400">{position.shares} shares @ ${(position.price * 100).toFixed(0)}¢</span>
@@ -321,9 +321,9 @@ export function KashiPredictionsPage() {
                       </div>
                     </div>
                     <div className="mt-3">
-                      <Progress 
-                        value={(position.currentValue / (position.currentValue - position.pnl)) * 100} 
-                        className="h-2 bg-slate-800" 
+                      <Progress
+                        value={(position.currentValue / (position.currentValue - position.pnl)) * 100}
+                        className="h-2 bg-slate-800"
                       />
                     </div>
                   </CardContent>

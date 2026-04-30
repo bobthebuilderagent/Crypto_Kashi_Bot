@@ -32,7 +32,7 @@ const cryptoSection: SidebarSection = {
 }
 
 const predictionsSection: SidebarSection = {
-  title: "Kashi Predictions",
+  title: "Predictions",
   items: [
     { icon: <Target className="h-5 w-5 text-red-400" />, label: "Market Feed", badge: "12", badgeColor: "bg-purple-500" },
     { icon: <TrendingUp className="h-5 w-5 text-green-500" />, label: "My Positions", badge: "3", badgeColor: "bg-green-500" },

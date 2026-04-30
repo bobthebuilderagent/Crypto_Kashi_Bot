@@ -1,5 +1,7 @@
-import { KashiSettingsPage } from "@/components/pages/KashiSettingsPage"
+"use client"
 
-export default function KashiSettingsRoute() {
-  return <KashiSettingsPage />
+import { PredictionsSettingsPage } from "@/components/pages/PredictionsSettingsPage"
+
+export default function PredictionsSettingsRoute() {
+  return <PredictionsSettingsPage />
 }

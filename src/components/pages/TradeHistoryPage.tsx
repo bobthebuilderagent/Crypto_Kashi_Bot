@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Search, Filter, Download, ChevronDown, ChevronUp, RefreshCw, Eye, Copy, X } from "lucide-react"
@@ -12,7 +13,7 @@ import { mockBots, mockTrades } from "@/data/mock"
 
 export function TradeHistoryPage() {
   const [searchTerm, setSearchTerm] = useState("")
- const [filterExchange, setFilterExchange] = useState<string | null>("all")
+  const [filterExchange, setFilterExchange] = useState<string | null>("all")
   const [filterSide, setFilterSide] = useState<string | null>("all")
   const [filterType, setFilterType] = useState<string | null>("all")
   const [expandedTrades, setExpandedTrades] = useState<Record<string, boolean>>({})
@@ -29,7 +30,7 @@ export function TradeHistoryPage() {
 
   const filteredTrades = mockTrades.filter(trade => {
     const matchesSearch = trade.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         trade.id.toLowerCase().includes(searchTerm.toLowerCase())
+      trade.id.toLowerCase().includes(searchTerm.toLowerCase())
     const bot = botMap.get(trade.botId)
     const matchesExchange = !filterExchange || filterExchange === "all" || (bot?.exchange || "").toLowerCase() === filterExchange.toLowerCase()
     const matchesSide = filterSide === "all" || trade.side === filterSide
@@ -134,8 +135,8 @@ export function TradeHistoryPage() {
         <div className="flex items-center gap-4 flex-1">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input 
-              placeholder="Search trades..." 
+            <Input
+              placeholder="Search trades..."
               className="w-full bg-slate-900/50 border-slate-700 pl-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -219,13 +220,12 @@ export function TradeHistoryPage() {
                 {sortTrades().map((trade, i) => {
                   const isExpanded = expandedTrades[trade.id]
                   return (
-                    <motion.div
-                      key={trade.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: i * 0.05 }}
-                    >
-                      <tr 
+                    <React.Fragment key={trade.id}>
+                      <motion.tr
+                        key={trade.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: i * 0.05 }}
                         className="border-b border-slate-800 hover:bg-slate-800/50 cursor-pointer"
                         onClick={() => setExpandedTrades(prev => ({ ...prev, [trade.id]: !isExpanded }))}
                       >
@@ -262,14 +262,15 @@ export function TradeHistoryPage() {
                             <Eye className="w-4 h-4" />
                           </Button>
                         </td>
-                      </tr>
+                      </motion.tr>
                       {isExpanded && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          className="bg-slate-800/30 px-4"
+                        <motion.tr
+                          key={`${trade.id}-detail`}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="bg-slate-800/30"
                         >
-                          <div className="py-4 border-t border-slate-700">
+                          <td colSpan={11} className="py-4 px-4">
                             <div className="grid grid-cols-2 gap-4 text-sm">
                               <div>
                                 <div className="text-slate-400">Type:</div>
@@ -288,10 +289,10 @@ export function TradeHistoryPage() {
                                 <div className="text-white">{trade.leverage ? `${trade.leverage}x` : '1x'}</div>
                               </div>
                             </div>
-                          </div>
-                        </motion.div>
+                          </td>
+                        </motion.tr>
                       )}
-                    </motion.div>
+                    </React.Fragment>
                   )
                 })}
               </tbody>

@@ -30,7 +30,7 @@ export interface DEXConnection {
 
 export interface PredictionConnection {
   id: string
-  platform: 'kashi' | 'polymarket'
+  platform: 'kalshi' | 'polymarket'
   apiKey: string
   token?: string
   walletAddress: string
@@ -71,16 +71,16 @@ export const US_DEX_PRESETS: Omit<DEXConnection, 'connected' | 'walletAddress' |
 ]
 
 export const PREDICTION_PRESETS: Omit<PredictionConnection, 'apiKey' | 'walletAddress' | 'connected'>[] = [
-  { id: 'kashi', platform: 'kashi' },
+  { id: 'kalshi', platform: 'kalshi' },
   { id: 'polymarket', platform: 'polymarket' },
 ]
 
 // ─── Storage Keys ────────────────────────────────────────
 
 const STORAGE_KEYS = {
-  CEX: 'kashi_cex_connections',
-  DEX: 'kashi_dex_connections',
-  PREDICTION: 'kashi_prediction_connections',
+  CEX: 'kalshi_cex_connections',
+  DEX: 'kalshi_dex_connections',
+  PREDICTION: 'kalshi_prediction_connections',
 } as const
 
 // ─── Helper: load from localStorage ──────────────────────

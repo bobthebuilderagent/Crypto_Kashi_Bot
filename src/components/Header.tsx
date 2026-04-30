@@ -33,7 +33,7 @@ export function Header() {
           </div>
           <div>
             <h1 className="text-lg font-bold text-white">Crypto+</h1>
-            <p className="-mt-1 text-xs text-slate-400">Kashi Platform</p>
+            <p className="-mt-1 text-xs text-slate-400">Predictions Platform</p>
           </div>
         </div>
 

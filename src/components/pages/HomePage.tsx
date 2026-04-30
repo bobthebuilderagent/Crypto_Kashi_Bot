@@ -36,7 +36,7 @@ export function HomePage() {
               🚀 New Platform - Full Crypto & Predictions
             </Badge>
             <h1 className="text-5xl sm:text-7xl font-bold bg-gradient-to-r from-white via-purple-200 to-cyan-200 bg-clip-text text-transparent mb-6">
-              Crypto+Kashi Platform
+              Crypto+Kalshi Platform
             </h1>
             <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-8">
               Your all-in-one trading dashboard. Manage crypto bots across multiple exchanges
@@ -92,7 +92,7 @@ export function HomePage() {
             { icon: <Zap className="h-8 w-8 text-cyan-400" />, title: "Real-time Trading", desc: "Execute trades instantly with sub-millisecond latency across major exchanges." },
             { icon: <TrendingUp className="h-8 w-8 text-purple-400" />, title: "Advanced Analytics", desc: "Deep insights, performance metrics, and strategy optimization tools." },
             { icon: <Shield className="h-8 w-8 text-green-400" />, title: "Secure & Reliable", desc: "Institutional-grade security with 99.8% uptime guarantee." },
-            { icon: <Target className="h-8 w-8 text-pink-400" />, title: "Market Predictions", desc: "Trade on prediction markets with competitive odds from Kashi & Polymarket." },
+            { icon: <Target className="h-8 w-8 text-pink-400" />, title: "Market Predictions", desc: "Trade on prediction markets with competitive odds from Kalshi & Polymarket." },
             { icon: <BarChart3 className="h-8 w-8 text-amber-400" />, title: "Multi-Exchange", desc: "Unified dashboard for Binance US, Coinbase, Kraken, and more." },
             { icon: <Globe className="h-8 w-8 text-indigo-400" />, title: "Global Markets", desc: "Access crypto and event markets worldwide. Trade anything." },
           ].map((feature, i) => (
