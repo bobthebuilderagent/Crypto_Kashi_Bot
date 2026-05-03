@@ -3,15 +3,37 @@
 import React from "react"
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Search, Filter, Download, ChevronDown, ChevronUp, RefreshCw, Eye, Copy, X } from "lucide-react"
+import { Search, Filter, Download, ChevronDown, ChevronUp, RefreshCw, Eye, Copy, X, Zap, CircleDollarSign } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { mockBots, mockTrades } from "@/data/mock"
+import { useAppContext } from "@/lib/providers"
+
+// CEX trades
+const cexTrades = [
+  { id: 't-1', botId: 'cex-1', symbol: 'BTC/USDT', side: 'buy', price: 65000, volume: 0.5, pnl: 125.50, timestamp: '2026-04-26T14:30:00Z', status: 'closed', exchange: 'Binance', type: 'spot' },
+  { id: 't-2', botId: 'cex-2', symbol: 'ETH/USDT', side: 'sell', price: 3600, volume: 2.0, pnl: 345.20, timestamp: '2026-04-26T15:15:00Z', status: 'closed', exchange: 'Coinbase Pro', type: 'futures' },
+  { id: 't-3', botId: 'cex-4', symbol: 'SOL/USDT', side: 'buy', price: 170, volume: 10.0, pnl: -23.40, timestamp: '2026-04-26T16:00:00Z', status: 'closed', exchange: 'Kraken', type: 'spot' },
+  { id: 't-4', botId: 'cex-1', symbol: 'BTC/USDT', side: 'sell', price: 66500, volume: 0.5, pnl: 775.00, timestamp: '2026-04-26T17:30:00Z', status: 'closed', exchange: 'Binance', type: 'spot' },
+  { id: 't-5', botId: 'cex-2', symbol: 'ETH/USDT', side: 'buy', price: 3400, volume: 2.0, pnl: 120.80, timestamp: '2026-04-26T18:00:00Z', status: 'closed', exchange: 'Coinbase Pro', type: 'futures' },
+  { id: 't-6', botId: 'cex-4', symbol: 'BTC/USDT', side: 'buy', price: 67000, volume: 0.3, pnl: -45.20, timestamp: '2026-04-26T18:45:00Z', status: 'closed', exchange: 'Binance US', type: 'futures' },
+]
+
+// DEX trades
+const dexTrades = [
+  { id: 'dt-1', botId: 'dex-1', symbol: 'BTC/ETH', side: 'buy', price: 19.45, volume: 2.5, pnl: 89.30, timestamp: '2026-04-26T14:30:00Z', status: 'closed', exchange: 'Uniswap V3', type: 'spot' },
+  { id: 'dt-2', botId: 'dex-2', symbol: 'SOL/USDC', side: 'sell', price: 178.50, volume: 15.0, pnl: 234.50, timestamp: '2026-04-26T15:15:00Z', status: 'closed', exchange: 'Raydium', type: 'spot' },
+  { id: 'dt-3', botId: 'dex-4', symbol: 'ETH/USDC', side: 'buy', price: 3455.00, volume: 1.0, pnl: -12.30, timestamp: '2026-04-26T16:00:00Z', status: 'closed', exchange: 'Uniswap V3', type: 'spot' },
+  { id: 'dt-4', botId: 'dex-1', symbol: 'BTC/ETH', side: 'sell', price: 19.50, volume: 2.5, pnl: 123.40, timestamp: '2026-04-26T17:30:00Z', status: 'closed', exchange: 'Uniswap V3', type: 'spot' },
+  { id: 'dt-5', botId: 'dex-2', symbol: 'SOL/USDC', side: 'buy', price: 178.20, volume: 15.0, pnl: 67.80, timestamp: '2026-04-26T18:00:00Z', status: 'closed', exchange: 'Raydium', type: 'spot' },
+  { id: 'dt-6', botId: 'dex-3', symbol: 'WBTC/ETH', side: 'sell', price: 19.42, volume: 1.0, pnl: -45.60, timestamp: '2026-04-26T18:45:00Z', status: 'closed', exchange: 'Uniswap V2', type: 'spot' },
+]
 
 export function TradeHistoryPage() {
+  const { exchangeType, setExchangeType } = useAppContext()
   const [searchTerm, setSearchTerm] = useState("")
   const [filterExchange, setFilterExchange] = useState<string | null>("all")
   const [filterSide, setFilterSide] = useState<string | null>("all")
@@ -19,45 +41,30 @@ export function TradeHistoryPage() {
   const [expandedTrades, setExpandedTrades] = useState<Record<string, boolean>>({})
   const [sortBy, setSortBy] = useState<string | null>("date")
 
+  // Select trades based on exchange type
+  const trades = exchangeType === "cex" ? cexTrades : dexTrades
+
   const filterOptions = {
-    exchange: [...new Set(mockBots.flatMap(b => b.exchange))],
+    exchange: [...new Set(trades.map(t => t.exchange))],
     side: ["all", "long", "short"],
     type: ["all", "spot", "futures"],
   }
 
-  // Get bot data for trade filtering and mapping
-  const botMap = new Map(mockBots.map(b => [b.id, b]))
-
-  const filteredTrades = mockTrades.filter(trade => {
+  const filteredTrades = trades.filter(trade => {
     const matchesSearch = trade.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
       trade.id.toLowerCase().includes(searchTerm.toLowerCase())
-    const bot = botMap.get(trade.botId)
-    const matchesExchange = !filterExchange || filterExchange === "all" || (bot?.exchange || "").toLowerCase() === filterExchange.toLowerCase()
+    const matchesExchange = !filterExchange || filterExchange === "all" || trade.exchange.toLowerCase() === filterExchange.toLowerCase()
     const matchesSide = filterSide === "all" || trade.side === filterSide
-    const matchesType = !filterType || filterType === "all" || (bot?.type || "").toLowerCase() === filterType.toLowerCase()
+    const matchesType = !filterType || filterType === "all" || trade.type === filterType
     return matchesSearch && matchesExchange && matchesSide && matchesType
   })
 
-  // Map bot data to trades for display
-  const tradesWithBotData = filteredTrades.map(trade => ({
-    ...trade,
-    exchange: botMap.get(trade.botId)?.exchange || "Unknown",
-    type: botMap.get(trade.botId)?.type || "unknown",
-    size: trade.volume,
-    entryPrice: trade.price,
-    exitPrice: trade.price, // Using entry price as exit for simplicity
-    leverage: 1, // Default leverage
-    fee: 0, // Default fee
-    roi: botMap.get(trade.botId)?.winRate || 0, // Using win rate as ROI for display
-  }))
-
   const sortTrades = () => {
-    return [...tradesWithBotData].sort((a, b) => {
+    return [...filteredTrades].sort((a, b) => {
       switch (sortBy) {
         case "date": return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         case "volume": return b.volume - a.volume
         case "pnl": return b.pnl - a.pnl
-        case "roi": return b.roi - a.roi
         default: return 0
       }
     })
@@ -72,7 +79,12 @@ export function TradeHistoryPage() {
     >
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white mb-2">Trade History</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">
+          Trade History
+          <span className="ml-2 text-sm text-slate-400 font-normal">
+            ({exchangeType === "cex" ? "Centralized" : "Decentralized"} Exchanges)
+          </span>
+        </h1>
         <p className="text-slate-400">View and analyze all your trading activity</p>
       </div>
 
@@ -186,7 +198,6 @@ export function TradeHistoryPage() {
               <SelectItem value="date">Date</SelectItem>
               <SelectItem value="volume">Volume</SelectItem>
               <SelectItem value="pnl">P&L</SelectItem>
-              <SelectItem value="roi">ROI</SelectItem>
             </SelectContent>
           </Select>
           <Button variant="outline" className="border-slate-700 bg-slate-900/50 text-white">
@@ -209,9 +220,7 @@ export function TradeHistoryPage() {
                   <th className="text-left py-3 px-4 text-sm text-slate-400">Side</th>
                   <th className="text-right py-3 px-4 text-sm text-slate-400">Size</th>
                   <th className="text-right py-3 px-4 text-sm text-slate-400">Entry</th>
-                  <th className="text-right py-3 px-4 text-sm text-slate-400">Exit</th>
                   <th className="text-right py-3 px-4 text-sm text-slate-400">P&L</th>
-                  <th className="text-right py-3 px-4 text-sm text-slate-400">ROI</th>
                   <th className="text-right py-3 px-4 text-sm text-slate-400">Time</th>
                   <th className="text-center py-3 px-4 text-sm text-slate-400">Details</th>
                 </tr>
@@ -243,16 +252,12 @@ export function TradeHistoryPage() {
                             {trade.side.toUpperCase()}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right text-white">{trade.size}</td>
-                        <td className="py-3 px-4 text-right text-white">${trade.entryPrice.toLocaleString()}</td>
-                        <td className="py-3 px-4 text-right text-white">{trade.exitPrice ? `$${trade.exitPrice.toLocaleString()}` : '-'}</td>
+                        <td className="py-3 px-4 text-right text-white">{trade.volume}</td>
+                        <td className="py-3 px-4 text-right text-white">
+                          {exchangeType === "cex" ? `$${trade.price.toLocaleString()}` : `$${trade.price.toFixed(4)}`}
+                        </td>
                         <td className={`py-3 px-4 text-right font-semibold ${trade.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                           {trade.pnl > 0 ? '+' : ''}${trade.pnl.toLocaleString()}
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <span className={`${trade.roi >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {trade.roi.toFixed(2)}%
-                          </span>
                         </td>
                         <td className="py-3 px-4 text-right text-white">
                           {new Date(trade.timestamp).toLocaleString()}
@@ -270,7 +275,7 @@ export function TradeHistoryPage() {
                           animate={{ opacity: 1 }}
                           className="bg-slate-800/30"
                         >
-                          <td colSpan={11} className="py-4 px-4">
+                          <td colSpan={9} className="py-4 px-4">
                             <div className="grid grid-cols-2 gap-4 text-sm">
                               <div>
                                 <div className="text-slate-400">Type:</div>
@@ -278,15 +283,15 @@ export function TradeHistoryPage() {
                               </div>
                               <div>
                                 <div className="text-slate-400">Volume:</div>
-                                <div className="text-white">${trade.volume.toLocaleString()}</div>
+                                <div className="text-white">{trade.volume}</div>
                               </div>
                               <div>
-                                <div className="text-slate-400">Fee:</div>
-                                <div className="text-white">${trade.fee.toLocaleString()}</div>
+                                <div className="text-slate-400">Exchange:</div>
+                                <div className="text-white">{trade.exchange}</div>
                               </div>
                               <div>
-                                <div className="text-slate-400">Leverage:</div>
-                                <div className="text-white">{trade.leverage ? `${trade.leverage}x` : '1x'}</div>
+                                <div className="text-slate-400">Status:</div>
+                                <div className="text-white">{trade.status}</div>
                               </div>
                             </div>
                           </td>

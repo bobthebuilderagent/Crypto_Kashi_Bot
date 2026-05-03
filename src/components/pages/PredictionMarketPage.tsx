@@ -22,7 +22,7 @@ function getFilteredMarkets(platform: string) {
 }
 
 export function PredictionMarketPage() {
-  const [platformTab, setPlatformTab] = useState("kalshi")
+  const [platformTab, setPlatformTab] = useState("all")
   const [searchTerm, setSearchTerm] = useState("")
   const [filterCategory, setFilterCategory] = useState("all")
   const [filterPlatform, setFilterPlatform] = useState("all")
@@ -49,11 +49,17 @@ export function PredictionMarketPage() {
       transition={{ duration: 0.5 }}
       className="flex-1 p-6"
     >
-      {/* Platform Toggle - Kalshi vs Polymarket (like CEX/DEX in CryptoBotPage) */}
+      {/* Platform Toggle - All Platforms vs Kalshi vs Polymarket */}
       <div className="mb-6">
         <div className="flex justify-center">
           <Tabs defaultValue={platformTab} className="w-full max-w-2xl" onValueChange={setPlatformTab}>
             <TabsList className="bg-slate-800/50 border border-slate-700">
+              <TabsTrigger value="all" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-500">
+                <span className="flex items-center gap-2">
+                  <Zap className="h-6 w-6" />
+                  <span className="text-lg font-semibold">All Platforms</span>
+                </span>
+              </TabsTrigger>
               <TabsTrigger value="kalshi" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-600 data-[state=active]:to-purple-500">
                 <span className="flex items-center gap-2">
                   <Zap className="h-6 w-6" />
@@ -75,14 +81,14 @@ export function PredictionMarketPage() {
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-white mb-2">Prediction Market</h1>
         <p className="text-slate-400">
-          {platformTab === "kalshi" ? "Trade prediction assets on NFT-backed Kalshi markets" : "Trade prediction assets on Polymarket decentralized markets"}
+          {platformTab === "all" ? "Trade prediction assets across all platforms" : platformTab === "kalshi" ? "Trade prediction assets on NFT-backed Kalshi markets" : "Trade prediction assets on Polymarket decentralized markets"}
         </p>
       </div>
 
       {/* Platform Badge */}
       <div className="mb-4 flex items-center gap-2">
-        <Badge variant="outline" className={platformTab === "kalshi" ? "border-pink-500/50 text-pink-400" : "border-blue-500/50 text-blue-400"}>
-          {platformTab === "kalshi" ? "🎨 Kalshi" : "🌐 Polymarket"}
+        <Badge variant="outline" className={platformTab === "all" ? "border-purple-500/50 text-purple-400" : platformTab === "kalshi" ? "border-pink-500/50 text-pink-400" : "border-blue-500/50 text-blue-400"}>
+          {platformTab === "all" ? "🔥 All Platforms" : platformTab === "kalshi" ? "🎨 Kalshi" : "🌐 Polymarket"}
         </Badge>
         <span className="text-xs text-slate-500">•</span>
         <span className="text-xs text-slate-400">{filteredMarkets.length} markets</span>

@@ -155,11 +155,12 @@ function SettingsSidebar({ selectedTab, onSelect }: { selectedTab: string; onSel
 }
 
 // Content panel for each tab
-function SettingsPanel({ tab, settings, setSettings, platform }: {
+function SettingsPanel({ tab, settings, setSettings, platform, onPlatformChange }: {
   tab: string
   settings: PredictionsSettings
   setSettings: (s: PredictionsSettings) => void
   platform: string
+  onPlatformChange: (p: string) => void
 }) {
   if (tab === "general") {
     return (
@@ -170,7 +171,7 @@ function SettingsPanel({ tab, settings, setSettings, platform }: {
       >
         {/* Platform Toggle */}
         <div className="mb-8">
-          <PlatformToggle selectedPlatform={platform} onSelect={() => {}} />
+          <PlatformToggle selectedPlatform={platform} onSelect={onPlatformChange} />
           <div className="text-center mb-2">
             <span className="text-sm text-slate-400">
               {platform === "kalshi" ? "NFT-backed prediction markets with Kalshi" : "Decentralized prediction markets with Polymarket"}
@@ -369,6 +370,28 @@ function SettingsPanel({ tab, settings, setSettings, platform }: {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
+        {/* Platform Toggle */}
+        <div className="mb-6">
+          <div className="flex justify-center">
+            <Tabs defaultValue={platform} className="w-full max-w-2xl" onValueChange={onPlatformChange}>
+              <TabsList className="bg-slate-800/50 border border-slate-700">
+                <TabsTrigger value="kalshi" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-600 data-[state=active]:to-purple-500">
+                  <span className="flex items-center gap-2">
+                    <Zap className="h-5 w-5" />
+                    <span className="text-base font-semibold">Kalshi</span>
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger value="polymarket" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-500">
+                  <span className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    <span className="text-base font-semibold">Polymarket</span>
+                  </span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
+
         <Card className="bg-slate-900/50 border-slate-700/50 max-w-2xl">
           <CardContent className="p-5 space-y-5">
             <div className="grid grid-cols-2 gap-4">
@@ -449,6 +472,28 @@ function SettingsPanel({ tab, settings, setSettings, platform }: {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
+        {/* Platform Toggle */}
+        <div className="mb-6">
+          <div className="flex justify-center">
+            <Tabs defaultValue={platform} className="w-full max-w-2xl" onValueChange={onPlatformChange}>
+              <TabsList className="bg-slate-800/50 border border-slate-700">
+                <TabsTrigger value="kalshi" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-600 data-[state=active]:to-purple-500">
+                  <span className="flex items-center gap-2">
+                    <Zap className="h-5 w-5" />
+                    <span className="text-base font-semibold">Kalshi</span>
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger value="polymarket" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-500">
+                  <span className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    <span className="text-base font-semibold">Polymarket</span>
+                  </span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
+
         <Card className="bg-slate-900/50 border-slate-700/50 max-w-2xl">
           <CardContent className="p-5 space-y-3">
             {Object.entries(settings.notifications).map(([key, value]) => (
@@ -479,6 +524,28 @@ function SettingsPanel({ tab, settings, setSettings, platform }: {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
+        {/* Platform Toggle */}
+        <div className="mb-6">
+          <div className="flex justify-center">
+            <Tabs defaultValue={platform} className="w-full max-w-2xl" onValueChange={onPlatformChange}>
+              <TabsList className="bg-slate-800/50 border border-slate-700">
+                <TabsTrigger value="kalshi" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-600 data-[state=active]:to-purple-500">
+                  <span className="flex items-center gap-2">
+                    <Zap className="h-5 w-5" />
+                    <span className="text-base font-semibold">Kalshi</span>
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger value="polymarket" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-500">
+                  <span className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    <span className="text-base font-semibold">Polymarket</span>
+                  </span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
+
         <Card className="bg-slate-900/50 border-slate-700/50 max-w-2xl">
           <CardContent className="p-5 space-y-5">
             <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-800/50">
@@ -541,6 +608,28 @@ function SettingsPanel({ tab, settings, setSettings, platform }: {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
+        {/* Platform Toggle */}
+        <div className="mb-6">
+          <div className="flex justify-center">
+            <Tabs defaultValue={platform} className="w-full max-w-2xl" onValueChange={onPlatformChange}>
+              <TabsList className="bg-slate-800/50 border border-slate-700">
+                <TabsTrigger value="kalshi" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-600 data-[state=active]:to-purple-500">
+                  <span className="flex items-center gap-2">
+                    <Zap className="h-5 w-5" />
+                    <span className="text-base font-semibold">Kalshi</span>
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger value="polymarket" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-500">
+                  <span className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    <span className="text-base font-semibold">Polymarket</span>
+                  </span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
+
         <Card className="bg-slate-900/50 border-slate-700/50 max-w-2xl">
           <CardContent className="p-5 space-y-5">
             <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-800/50">
@@ -621,7 +710,7 @@ export function PredictionsSettingsPage() {
         </div>
 
         {/* Content */}
-        <SettingsPanel tab={activeTab} settings={settings} setSettings={setSettings} platform={activePlatform} />
+        <SettingsPanel tab={activeTab} settings={settings} setSettings={setSettings} platform={activePlatform} onPlatformChange={setActivePlatform} />
 
         {/* Footer buttons */}
         <div className="mt-6 flex justify-end gap-3">

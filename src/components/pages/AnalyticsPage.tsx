@@ -2,18 +2,38 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { BarChart3, LineChart, PieChart, Calendar, Download, Share2, Filter, ChevronDown } from "lucide-react"
+import { BarChart3, LineChart, PieChart, Calendar, Download, Share2, Filter, ChevronDown, Zap, CircleDollarSign } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cryptoAssets, mockBots } from "@/data/mock"
+import { useAppContext } from "@/lib/providers"
+
+// CEX-specific bot data
+const cexBots = [
+  { id: 'cex-1', name: 'BTC Grid Bot', exchange: 'Binance', type: 'spot', status: 'active', strategy: 'Grid Trading', dailyPnl: 234.56, totalPnl: 12456.78, tradeCount: 1234, winRate: 67.8, icon: '🤖', totalInvestment: 50000 },
+  { id: 'cex-2', name: 'ETH Futures Scalper', exchange: 'Coinbase Pro', type: 'futures', status: 'active', strategy: 'Scalping', dailyPnl: -45.23, totalPnl: 3456.12, tradeCount: 4567, winRate: 72.3, icon: '⚡', totalInvestment: 25000 },
+  { id: 'cex-3', name: 'SOL DCA Bot', exchange: 'Kraken', type: 'spot', status: 'paused', strategy: 'DCA', dailyPnl: 0, totalPnl: 890.45, tradeCount: 89, winRate: 61.2, icon: '☀️', totalInvestment: 10000 },
+  { id: 'cex-4', name: 'Multi-Asset Arb', exchange: 'Binance US', type: 'futures', status: 'active', strategy: 'Arbitrage', dailyPnl: 567.89, totalPnl: 45678.90, tradeCount: 8901, winRate: 58.9, icon: '🔄', totalInvestment: 100000 },
+]
+
+// DEX-specific bot data
+const dexBots = [
+  { id: 'dex-1', name: 'BTC/ETH Swap Bot', exchange: 'Uniswap V3', type: 'spot', status: 'active', strategy: 'Liquidity', dailyPnl: 189.34, totalPnl: 8901.23, tradeCount: 567, winRate: 71.2, icon: '🔗', totalInvestment: 30000 },
+  { id: 'dex-2', name: 'SOL Yield Farm', exchange: 'Raydium', type: 'spot', status: 'active', strategy: 'Yield Farming', dailyPnl: 123.45, totalPnl: 4567.89, tradeCount: 234, winRate: 68.5, icon: '🌾', totalInvestment: 15000 },
+  { id: 'dex-3', name: 'ARB Sniper', exchange: 'Uniswap V3', type: 'spot', status: 'paused', strategy: 'Sniper', dailyPnl: 0, totalPnl: -234.56, tradeCount: 45, winRate: 42.1, icon: '🎯', totalInvestment: 5000 },
+  { id: 'dex-4', name: 'MEV Bot', exchange: 'Uniswap V3', type: 'spot', status: 'active', strategy: 'MEV', dailyPnl: 345.67, totalPnl: 23456.78, tradeCount: 1234, winRate: 55.3, icon: '🔍', totalInvestment: 75000 },
+]
 
 export function AnalyticsPage() {
+  const { exchangeType, setExchangeType } = useAppContext()
   const [timeRange, setTimeRange] = useState("7d")
   const [selectedBot, setSelectedBot] = useState<string | null>("all")
   const [timeRangeOption, setTimeRangeOption] = useState<string | null>("7d")
+
+  const bots = exchangeType === "cex" ? cexBots : dexBots
 
   const timeRanges = [
     { label: "24h", value: "24h" },
@@ -23,12 +43,12 @@ export function AnalyticsPage() {
   ]
 
   const analytics = {
-    totalTrades: 1247,
-    winRate: 67.3,
+    totalTrades: bots.reduce((sum, b) => sum + b.tradeCount, 0),
+    winRate: bots.reduce((sum, b) => sum + b.winRate, 0) / bots.length,
     avgTradeValue: "$3,247",
-    totalProfit: "$28,432",
-    bestPerforming: "Grid Bot",
-    worstPerforming: "Scalper Bot",
+    totalProfit: `$${bots.reduce((sum, b) => sum + b.totalPnl, 0).toLocaleString()}`,
+    bestPerforming: bots.sort((a, b) => b.totalPnl - a.totalPnl)[0]?.name || "N/A",
+    worstPerforming: bots.sort((a, b) => b.totalPnl - a.totalPnl)[bots.length - 1]?.name || "N/A",
   }
 
   return (
@@ -40,7 +60,12 @@ export function AnalyticsPage() {
     >
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-white mb-2">Analytics</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">
+          Analytics
+          <span className="ml-2 text-sm text-slate-400 font-normal">
+            ({exchangeType === "cex" ? "Centralized" : "Decentralized"} Exchanges)
+          </span>
+        </h1>
         <p className="text-slate-400">Detailed performance metrics and trading statistics</p>
       </div>
 
@@ -76,7 +101,7 @@ export function AnalyticsPage() {
               <PieChart className="w-4 h-4 mr-2" />
               Win Rate
             </Button>
-            <Button variant="outline" className="border-slate-700 bg-slate-900/50 text-white">
+            <Button variant="outline" className="border-slate-900/50 text-white">
               <Calendar className="w-4 h-4 mr-2" />
               Calendar
             </Button>
@@ -102,7 +127,7 @@ export function AnalyticsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Bots</SelectItem>
-                {mockBots.map(bot => (
+                {bots.map(bot => (
                   <SelectItem key={bot.id} value={bot.id}>{bot.name}</SelectItem>
                 ))}
               </SelectContent>
@@ -131,7 +156,7 @@ export function AnalyticsPage() {
               Performance Overview
             </h3>
             <div className="space-y-4">
-              {mockBots.slice(0, 4).map((bot, i) => (
+              {bots.slice(0, 4).map((bot, i) => (
                 <div key={bot.id} className="p-3 rounded-lg bg-slate-800/50">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -142,10 +167,10 @@ export function AnalyticsPage() {
                       {bot.strategy}
                     </Badge>
                   </div>
-                  <div className="space-y-2">
+                    <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-400">Total Trades:</span>
-                      <span className="text-white">{Math.floor(Math.random() * 500) + 50}</span>
+                      <span className="text-white">{bot.tradeCount}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-400">Win Rate:</span>
@@ -216,7 +241,7 @@ export function AnalyticsPage() {
                 </tr>
               </thead>
               <tbody>
-                {[...mockBots].sort((a, b) => b.totalPnl - a.totalPnl).slice(0, 5).map((bot, i) => (
+                {[...bots].sort((a, b) => b.totalPnl - a.totalPnl).slice(0, 5).map((bot, i) => (
                   <tr key={bot.id} className="border-b border-slate-800 hover:bg-slate-800/50">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
@@ -224,7 +249,7 @@ export function AnalyticsPage() {
                         <span className="text-white">{bot.name}</span>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-right text-white">{Math.floor(Math.random() * 500) + 50}</td>
+                    <td className="py-3 px-4 text-right text-white">{bot.tradeCount}</td>
                     <td className="py-3 px-4 text-right">
                       <span className={`${bot.winRate >= 60 ? "text-green-400" : "text-red-400"}`}>
                         {bot.winRate}%

@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useAppContext } from "@/lib/providers"
 
 // Category definitions
 const categories = [
@@ -34,11 +35,10 @@ function SettingsSidebar({ tabs, selectedTab, onSelect }: { tabs: Array<{ id: st
         <button
           key={tab.id}
           onClick={() => onSelect(tab.id)}
-          className={`flex items-center gap-3 w-full text-left px-3 py-2 rounded-lg transition-all text-sm ${
-            selectedTab === tab.id
+          className={`flex items-center gap-3 w-full text-left px-3 py-2 rounded-lg transition-all text-sm ${selectedTab === tab.id
               ? "bg-slate-800 text-white font-medium"
               : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
-          }`}
+            }`}
         >
           {tab.icon}
           {tab.name}
@@ -73,11 +73,10 @@ function CEXSettingsPanel() {
               <button
                 key={ex.id}
                 onClick={() => setSelectedExchange(ex.id)}
-                className={`p-3 rounded-lg border transition-all text-left ${
-                  selectedExchange === ex.id
+                className={`p-3 rounded-lg border transition-all text-left ${selectedExchange === ex.id
                     ? "bg-slate-800 border-cyan-500/50 text-white"
                     : "bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
-                }`}
+                  }`}
               >
                 <div className="text-lg mb-1">{ex.icon}</div>
                 <div className="text-sm font-medium">{ex.name}</div>
@@ -344,11 +343,10 @@ function DEXSettingsPanel() {
               <button
                 key={proto.id}
                 onClick={() => setSelectedProtocol(proto.id)}
-                className={`p-3 rounded-lg border transition-all text-center ${
-                  selectedProtocol === proto.id
+                className={`p-3 rounded-lg border transition-all text-center ${selectedProtocol === proto.id
                     ? "bg-slate-800 border-cyan-500/50 text-white"
                     : "bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
-                }`}
+                  }`}
               >
                 <div className="text-lg mb-1">{proto.icon}</div>
                 <div className="text-sm font-medium">{proto.name}</div>
@@ -515,37 +513,8 @@ function DEXSettingsPanel() {
   )
 }
 
-// CEX/DEX Platform Toggle Component
-function PlatformToggle({ selectedPlatform, onSelect }: {
-  selectedPlatform: "cex" | "dex"
-  onSelect: (platform: "cex" | "dex") => void
-}) {
-  return (
-    <div className="mb-6">
-      <Tabs defaultValue={selectedPlatform} className="w-full max-w-xl" onValueChange={(v) => onSelect(v as "cex" | "dex")}>
-        <TabsList className="bg-slate-800/50 border border-slate-700">
-          <TabsTrigger value="cex" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-cyan-500">
-            <span className="flex items-center gap-2">
-              <Key className="h-4 w-4" />
-              <span className="text-sm font-semibold">CEX</span>
-            </span>
-          </TabsTrigger>
-          <TabsTrigger value="dex" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-cyan-500">
-            <span className="flex items-center gap-2">
-              <Wallet className="h-4 w-4" />
-              <span className="text-sm font-semibold">DEX</span>
-            </span>
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-    </div>
-  )
-}
-
 // Settings page content component — each category has its own toggle behavior
-function SettingsPageContent({ selectedCategory }: { selectedCategory: string }) {
-  const [platform, setPlatform] = useState<"cex" | "dex">("cex")
-
+function SettingsPageContent({ selectedCategory, platform, setPlatform }: { selectedCategory: string; platform: "cex" | "dex"; setPlatform: (p: "cex" | "dex") => void }) {
   return (
     <motion.div
       key={selectedCategory}
@@ -556,6 +525,11 @@ function SettingsPageContent({ selectedCategory }: { selectedCategory: string })
     >
       {/* Header */}
       <div className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <Badge variant="outline" className={platform === "cex" ? "border-cyan-500/50 text-cyan-400" : "border-purple-500/50 text-purple-400"}>
+            {platform === "cex" ? "CEX" : "DEX"}
+          </Badge>
+        </div>
         <h1 className="text-2xl font-bold text-white mb-1">
           {categories.find((c) => c.id === selectedCategory)?.name}
         </h1>
@@ -568,11 +542,6 @@ function SettingsPageContent({ selectedCategory }: { selectedCategory: string })
           {selectedCategory === "security" && "Manage authentication and session security."}
         </p>
       </div>
-
-      {/* CEX/DEX Toggle — only shown for categories that support both platform types */}
-      {(selectedCategory === "api-keys" || selectedCategory === "wallets") && (
-        <PlatformToggle selectedPlatform={platform} onSelect={setPlatform} />
-      )}
 
       {/* Platform-specific content: CEX vs DEX panels */}
       {platform === "cex" ? (
@@ -799,12 +768,13 @@ function SettingsPageContent({ selectedCategory }: { selectedCategory: string })
 
 // Main page component
 export function CryptoSettingsPage() {
+  const { exchangeType, setExchangeType } = useAppContext()
   const [selectedTab, setSelectedTab] = useState("general")
 
   return (
     <div className="flex h-full">
       <SettingsSidebar tabs={categories} selectedTab={selectedTab} onSelect={setSelectedTab} />
-      <SettingsPageContent selectedCategory={selectedTab} />
+      <SettingsPageContent selectedCategory={selectedTab} platform={exchangeType} setPlatform={setExchangeType} />
     </div>
   )
 }

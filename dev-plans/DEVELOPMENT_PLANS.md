@@ -15,8 +15,10 @@ Unified crypto trading bot and prediction markets dashboard.
 | 2 | Apr 27, 2026 | Created all 10 sidebar pages (~2,420 lines) |
 | 3 | Apr 27, 2026 | Navigation setup + debugging fixes |
 | 4 | Apr 29, 2026 | Settings page redesign — removed duplicates, consistent sidebar layout |
-| 5 | Apr 29, 2026 | TypeScript fixes — Slider component, createContext, file extension rename, Promise types |
-| 6 | Apr 30, 2026 | ExchangeType context — added CEX/DEX toggle state to AppProvider, persists across all crypto pages |
+|| 5 | Apr 29, 2026 | TypeScript fixes — Slider component, createContext, file extension rename, Promise types |
+| 6 | Apr 29, 2026 | TypeScript fixes — Slider component, createContext, file extension rename, Promise types |
+| 7 | Apr 30, 2026 | ExchangeType context — added CEX/DEX toggle state to AppProvider, persists across all crypto pages |
+| 8 | Apr 30, 2026 | Unified CEX/DEX toggle across all crypto pages — removed local state from CryptoBotPage and CryptoSettingsPage, replaced with global context, new button-style toggle in layout |
 
 ---
 
@@ -190,7 +192,7 @@ Both settings pages now use a consistent professional layout.
 **Modified:** `src/lib/settingsContext.tsx` line 73-80
 **Also fixed in `SettingsDialog.tsx`:** Changed `onChange` handler to always use `'token'` as the field key, updated value assignment to `conn.token || conn.apiKey || ''`
 
-### Session 5 - TypeScript Fixes (April 29, 2026)
+### Session 6 - TypeScript Fixes (April 29, 2026)
 
 #### **Error 1: PredictionMarketPage.tsx - Slider type error**
 **Error:** `Event` type not defined, value binding mismatched with state
@@ -211,7 +213,7 @@ Both settings pages now use a consistent professional layout.
 **Error:** `testCexConnection` and `testPredictionConnection` return `Promise<unknown>` instead of `Promise<boolean>`
 **Fix:** Lines 229 & 242 — Added explicit `: Promise<boolean>` return types and `new Promise<boolean>()` type parameters
 
-### Session 6 - ExchangeType Context (April 30, 2026)
+### Session 7 - ExchangeType Context (April 30, 2026)
 
 #### **Feature: CEX/DEX Exchange Type State Management**
 **Goal:** Persist CEX/DEX toggle state across all crypto pages so users don't lose their exchange type when navigating
@@ -220,8 +222,44 @@ Both settings pages now use a consistent professional layout.
 - Added `exchangeType: ExchangeType` and `setExchangeType: (type: ExchangeType) => void` to `AppContextType` interface
 - Added `const [exchangeType, setExchangeType] = useState<ExchangeType>('cex')` to `AppProvider`
 - Added `exchangeType` and `setExchangeType` to the context provider value
-**Status:** TypeScript compiles cleanly, no errors
-**Next:** Add CEX/DEX toggle component to crypto layout (Step 2)
+**Status:** TypeScript compiles cleanly, no errors. Toggle state now persists when navigating between crypto pages.
+
+### Session 8 - Unified CEX/DEX Toggle (April 30, 2026)
+
+#### **Feature: Unified CEX/DEX Toggle Across All Crypto Pages**
+**Goal:** Make the CEX/DEX toggle in the crypto layout bar control the state for ALL crypto pages simultaneously, replacing individual page-local toggles
+
+**Changes made:**
+
+**CryptoBotPage.tsx:**
+- Removed local `exchangeTypeTab` state and old Tabs-based toggle UI
+- Now uses `useAppContext().exchangeType` for the global CEX/DEX state
+- Toggle buttons now update the global context, synced with the layout bar
+
+**CryptoSettingsPage.tsx:**
+- Removed local `platform` state and old Tabs-based `PlatformToggle` component
+- Now uses `useAppContext().exchangeType` for the global CEX/DEX state
+- Replaced old toggle UI with new button-style toggle matching the layout bar
+- `SettingsPageContent` now receives `platform` and `setPlatform` from global context
+
+**client-layout.tsx (new file):**
+- Contains the `CEXDEXToggleBar` component that reads/writes `useAppContext()`
+- Toggle buttons use the same gradient styling and logic as other pages
+
+**crypto/seo.tsx (new file):**
+- Server Component that exports the `metadata` for Next.js App Router
+- Required because `metadata` cannot be defined in Client Components
+
+**crypto/layout.tsx (updated):**
+- Moved from Client Component to Server Component
+- Imports `metadata` from `./seo` and `ClientLayout` from `./client-layout`
+- Delegates rendering to the Client Component
+
+**Result:**
+- Single source of truth: `exchangeType` in AppProvider context
+- Layout bar toggle controls state for ALL crypto pages simultaneously
+- Navigating between pages (Market Overview, Analytics, Trade History, Settings) preserves toggle state
+- All toggle buttons across pages share the same visual state (gradient active, slate inactive)
 
 ---
 
@@ -230,12 +268,15 @@ Both settings pages now use a consistent professional layout.
 | File | Purpose |
 |------|---------|
 | `src/app/layout.tsx` | Root layout with providers and wrappers |
-| `src/lib/providers.tsx` | App context for routing/state |
+| `src/lib/providers.tsx` | App context for routing/state (includes ExchangeType) |
 | `src/components/Header.tsx` | Top navigation |
 | `src/components/Sidebar.tsx` | Navigation sidebar |
 | `src/app/page.tsx` | HomePage route |
 | `src/app/crypto/page.tsx` | Crypto bot route |
 | `src/app/predictions/page.tsx` | Predictions route |
+| `src/app/crypto/layout.tsx` | Crypto layout — Server Component, delegates to ClientLayout |
+| `src/app/crypto/client-layout.tsx` | Client Component with CEX/DEX toggle bar |
+| `src/app/crypto/seo.tsx` | Server Component metadata export |
 | `src/types/index.ts` | Shared type definitions |
 | `src/data/mock.ts` | Mock data |
 | `src/components/pages/*.tsx` | All sidebar pages |
@@ -254,4 +295,4 @@ After that, implement the trading bot logic on the `/crypto` page as the core fe
 ---
 
 *Last updated: April 30, 2026*
-*Session count: 6*
+*Session count: 8*

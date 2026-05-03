@@ -12,8 +12,12 @@ export function Header() {
   const router = useRouter()
   const pathname = usePathname()
   
-  // Derive section from URL instead of context state
-  const currentSection = pathname === "/" || pathname === "" ? "home" : pathname.slice(1)
+  // Derive active section from URL — matches both root and subpages
+  const isHome = pathname === "/" || pathname === ""
+  const isCrypto = pathname === "/crypto" || pathname.startsWith("/crypto/")
+  const isPredictions = pathname === "/predictions" || pathname.startsWith("/predictions/")
+
+  const activeSection = isHome ? "home" : isCrypto ? "crypto" : isPredictions ? "predictions" : "home"
 
   const navigate = (s: string) => {
     router.push(s === "home" ? "/" : `/${s}`)
@@ -48,13 +52,13 @@ export function Header() {
               key={s.label}
               onClick={() => navigate(s.label)}
               className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                currentSection === s.label
+                activeSection === s.label
                   ? "text-white bg-white/10"
                   : "text-slate-400 hover:text-white hover:bg-white/5"
               }`}
             >
               {s.name}
-              {currentSection === s.label && (
+              {activeSection === s.label && (
                 <motion.div
                   layoutId="activeTab"
                   className="absolute inset-0 rounded-lg border-2 border-purple-500/50"
@@ -113,7 +117,7 @@ export function Header() {
                   setMobileMenuOpen(false)
                 }}
                 className={`px-4 py-3 rounded-lg text-sm font-medium text-left ${
-                  currentSection === s.label
+                  activeSection === s.label
                     ? "text-white bg-white/10"
                     : "text-slate-400 hover:text-white hover:bg-white/5"
                 }`}

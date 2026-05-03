@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { TrendingUp, TrendingDown, Plus, Minus, Trash2, Eye, EyeOff, Edit, ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { TrendingUp, TrendingDown, Plus, Minus, Trash2, Eye, EyeOff, Edit, ArrowUpRight, ArrowDownRight, Zap, TrendingUp as TrendingUpIcon } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
@@ -18,9 +19,11 @@ interface Position {
   status: "OPEN" | "RESOLVED"
   outcome?: "YES" | "NO"
   roi: number
+  platform: string
 }
 
 export function MyPositionsPage() {
+  const [platformTab, setPlatformTab] = useState("all")
   const [positions, setPositions] = useState<Position[]>([
     {
       id: "1",
@@ -33,6 +36,7 @@ export function MyPositionsPage() {
       potentialProfit: 75.00,
       status: "OPEN",
       roi: 200,
+      platform: "Polymarket",
     },
     {
       id: "2",
@@ -45,6 +49,7 @@ export function MyPositionsPage() {
       potentialProfit: 55.00,
       status: "OPEN",
       roi: 22,
+      platform: "Kalshi",
     },
     {
       id: "3",
@@ -57,21 +62,64 @@ export function MyPositionsPage() {
       potentialProfit: 90.00,
       status: "OPEN",
       roi: 200,
+      platform: "Polymarket",
+    },
+    {
+      id: "4",
+      marketId: "m4",
+      marketTitle: "US election 2026 outcome",
+      question: "Will the incumbent win re-election in 2026?",
+      type: "NO",
+      amount: 200,
+      cost: 90.00,
+      potentialProfit: 110.00,
+      status: "OPEN",
+      roi: 22,
+      platform: "Kalshi",
     },
   ])
 
   const [resolvedPositions, setResolvedPositions] = useState<Position[]>([])
-  const [showResolved, setShowResolved] = useState(false)
   const [expandedMarket, setExpandedMarket] = useState<string | null>(null)
 
-  const totalInvested = positions.reduce((sum, p) => sum + p.cost, 0)
-  const totalPotentialProfit = positions.reduce((sum, p) => sum + p.potentialProfit, 0)
-  const winningPositions = positions.filter(p => p.type === "YES" && p.potentialProfit > 0).length
-  const totalPositions = positions.length
+  const filteredPositions = platformTab === "all" ? positions : positions.filter(p => p.platform.toLowerCase() === platformTab)
+
+  const totalInvested = filteredPositions.reduce((sum, p) => sum + p.cost, 0)
+  const totalPotentialProfit = filteredPositions.reduce((sum, p) => sum + p.potentialProfit, 0)
+  const winningPositions = filteredPositions.filter(p => p.type === "YES" && p.potentialProfit > 0).length
+  const totalPositions = filteredPositions.length
 
   return (
     <div className="min-h-screen bg-slate-950">
       <div className="mx-auto max-w-7xl px-4 py-8">
+        {/* Platform Toggle */}
+        <div className="mb-6">
+          <div className="flex justify-center">
+            <Tabs defaultValue={platformTab} className="w-full max-w-2xl" onValueChange={setPlatformTab}>
+              <TabsList className="bg-slate-800/50 border border-slate-700">
+                <TabsTrigger value="all" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-500">
+                  <span className="flex items-center gap-2">
+                    <Zap className="h-6 w-6" />
+                    <span className="text-lg font-semibold">All Platforms</span>
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger value="kalshi" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-600 data-[state=active]:to-purple-500">
+                  <span className="flex items-center gap-2">
+                    <Zap className="h-6 w-6" />
+                    <span className="text-lg font-semibold">Kalshi</span>
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger value="polymarket" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-500">
+                  <span className="flex items-center gap-2">
+                    <TrendingUpIcon className="h-6 w-6" />
+                    <span className="text-lg font-semibold">Polymarket</span>
+                  </span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">My Positions</h1>
@@ -134,13 +182,6 @@ export function MyPositionsPage() {
             </Badge>
           </div>
           <div className="flex gap-2">
-            <button
-              onClick={() => setShowResolved(!showResolved)}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-            >
-              <Eye className="h-4 w-4" />
-              {showResolved ? "Hide Resolved" : "Show Resolved"}
-            </button>
             <button className="flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-purple-500 to-cyan-500 text-white rounded-lg hover:from-purple-600 hover:to-cyan-600 transition-all">
               <Plus className="h-4 w-4" />
               New Position
@@ -150,7 +191,7 @@ export function MyPositionsPage() {
 
         {/* Positions Grid */}
         <div className="grid gap-4">
-          {positions.map((position, index) => (
+          {filteredPositions.map((position, index) => (
             <motion.div
               key={position.id}
               initial={{ opacity: 0, y: 20 }}
@@ -171,6 +212,9 @@ export function MyPositionsPage() {
                         </Badge>
                         <Badge variant="outline" className="bg-slate-800 text-slate-400 border-slate-700">
                           {position.status}
+                        </Badge>
+                        <Badge variant="outline" className="bg-slate-800 text-slate-400 border-slate-700">
+                          {position.platform}
                         </Badge>
                       </div>
                       <p className="text-slate-500 text-sm">{position.question}</p>
@@ -235,14 +279,13 @@ export function MyPositionsPage() {
         </div>
 
         {/* Resolved Positions Section */}
-        {showResolved && (
+        {resolvedPositions.length > 0 && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             className="mt-8"
           >
             <div className="flex items-center gap-2 mb-4">
-              <EyeOff className="h-5 w-5 text-slate-500" />
               <h3 className="text-lg font-semibold text-slate-400">Resolved Positions</h3>
             </div>
             <div className="grid gap-4">

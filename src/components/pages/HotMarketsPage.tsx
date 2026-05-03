@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { TrendingUp, TrendingDown, Flame, Clock, Calendar, Globe, ArrowUpRight, ArrowDownRight, Share2, ExternalLink } from "lucide-react"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { TrendingUp, TrendingDown, Flame, Clock, Calendar, Globe, ArrowUpRight, ArrowDownRight, Share2, ExternalLink, Zap } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
@@ -22,13 +23,14 @@ interface HotMarket {
 }
 
 export function HotMarketsPage() {
+  const [platformTab, setPlatformTab] = useState("all")
   const [markets, setMarkets] = useState<HotMarket[]>([
     {
       id: "1",
       title: "Bitcoin to $100K by end of 2026",
       question: "Will Bitcoin reach $100,000 USD before December 31, 2026?",
       category: "Bitcoin",
-      platform: "CoinGecko",
+      platform: "Polymarket",
       yesPercent: 68,
       noPercent: 32,
       volume: 125000,
@@ -84,7 +86,7 @@ export function HotMarketsPage() {
       title: "Tesla stock to $500 by year end",
       question: "Will Tesla (TSLA) reach $500 before December 31, 2026?",
       category: "Stocks",
-      platform: "Manifold",
+      platform: "Polymarket",
       yesPercent: 38,
       noPercent: 62,
       volume: 67000,
@@ -97,16 +99,14 @@ export function HotMarketsPage() {
 
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
-  const [selectedPlatform, setSelectedPlatform] = useState("All")
 
   const categories = ["All", "Bitcoin", "Ethereum", "AI & Tech", "Solana", "Stocks", "NFTs", "Crypto"]
-  const platforms = ["All", "CoinGecko", "Kalshi", "Polymarket", "Manifold"]
 
   const filteredMarkets = markets.filter(m => {
     const matchesSearch = m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          m.question.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = selectedCategory === "All" || m.category === selectedCategory
-    const matchesPlatform = selectedPlatform === "All" || m.platform === selectedPlatform
+    const matchesPlatform = platformTab === "all" || m.platform.toLowerCase() === platformTab
     return matchesSearch && matchesCategory && matchesPlatform
   })
 
@@ -142,6 +142,34 @@ export function HotMarketsPage() {
   return (
     <div className="min-h-screen bg-slate-950">
       <div className="mx-auto max-w-7xl px-4 py-8">
+        {/* Platform Toggle */}
+        <div className="mb-6">
+          <div className="flex justify-center">
+            <Tabs defaultValue={platformTab} className="w-full max-w-2xl" onValueChange={setPlatformTab}>
+              <TabsList className="bg-slate-800/50 border border-slate-700">
+                <TabsTrigger value="all" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-500">
+                  <span className="flex items-center gap-2">
+                    <Zap className="h-6 w-6" />
+                    <span className="text-lg font-semibold">All Platforms</span>
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger value="kalshi" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-600 data-[state=active]:to-purple-500">
+                  <span className="flex items-center gap-2">
+                    <Zap className="h-6 w-6" />
+                    <span className="text-lg font-semibold">Kalshi</span>
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger value="polymarket" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-500">
+                  <span className="flex items-center gap-2">
+                    <TrendingUp className="h-6 w-6" />
+                    <span className="text-lg font-semibold">Polymarket</span>
+                  </span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
@@ -218,15 +246,6 @@ export function HotMarketsPage() {
             >
               {categories.map(cat => (
                 <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-            <select
-              value={selectedPlatform}
-              onChange={(e) => setSelectedPlatform(e.target.value)}
-              className="px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-            >
-              {platforms.map(p => (
-                <option key={p} value={p}>{p}</option>
               ))}
             </select>
           </div>

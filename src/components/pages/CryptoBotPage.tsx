@@ -13,12 +13,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { useAppContext } from "@/lib/providers"
 
 export function CryptoBotPage() {
+  const { exchangeType, setExchangeType } = useAppContext()
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [selectedBot, setSelectedBot] = useState<string | null>(null)
-  const [exchangeTypeTab, setExchangeTypeTab] = useState("cex")
 
   const filteredBots = mockBots.filter((bot) => {
     const matchesSearch = bot.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -41,28 +42,6 @@ export function CryptoBotPage() {
       animate={{ opacity: 1 }}
       className="min-h-screen bg-slate-950 text-white"
     >
-      {/* CEX vs DEX Exchange Type Switcher - Top Level */}
-      <section className="px-4 pt-6 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="flex justify-center">
-          <Tabs defaultValue="cex" className="w-full max-w-2xl" onValueChange={setExchangeTypeTab}>
-            <TabsList className="bg-slate-800/50 border border-slate-700">
-              <TabsTrigger value="cex" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-cyan-500">
-                <span className="flex items-center gap-2">
-                  <CircleDollarSign className="h-6 w-6" />
-                  <span className="text-lg font-semibold">CEX</span>
-                </span>
-              </TabsTrigger>
-              <TabsTrigger value="dex" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-cyan-500">
-                <span className="flex items-center gap-2">
-                  <Zap className="h-6 w-6" />
-                  <span className="text-lg font-semibold">DEX</span>
-                </span>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-      </section>
-
       {/* Stats Overview */}
       <section className="px-4 pt-6 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -248,167 +227,8 @@ export function CryptoBotPage() {
                   </div>
                   <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50">
                     <div>
-                      <div className="font-medium text-white flex items-center gap-2"><OctagonX className="h-4 w-4 text-red-400" /> Stop Loss</div>
-                      <div className="text-sm text-slate-400">Auto-close if price drops to threshold</div>
-                    </div>
-                    <Switch className="data-[state=checked]:bg-red-500" />
-                  </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50">
-                    <div>
-                      <div className="font-medium text-white flex items-center gap-2"><CircleDollarSign className="h-4 w-4 text-green-400" /> Take Profit</div>
-                      <div className="text-sm text-slate-400">Auto-close when target profit reached</div>
-                    </div>
-                    <Switch className="data-[state=checked]:bg-green-500" />
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            {/* Create Bot Dialog */}
-            <Dialog>
-              <DialogTrigger
-                render={
-                  <Button className="bg-gradient-to-r from-purple-600 to-cyan-500 border-0 text-white hover:from-purple-500 hover:to-cyan-400" />
-                }
-              >
-                <Plus className="mr-1 h-4 w-4" /> Create Bot
-              </DialogTrigger>
-              <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Create Trading Bot</DialogTitle>
-                  <DialogDescription className="text-slate-400">
-                    Build an automated trading bot with custom strategies, indicators, and risk management.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div>
-                    <Label className="text-sm text-slate-400 mb-1 block">Bot Name</Label>
-                    <Input placeholder="My Trading Bot" className="bg-slate-800 border-slate-700 text-white" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm text-slate-400 mb-1 block">Exchange</Label>
-                      <Select defaultValue="binance">
-                        <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                          <SelectValue placeholder="Select exchange" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="binance">🔶 Binance US</SelectItem>
-                          <SelectItem value="coinbase">🔵 Coinbase Pro</SelectItem>
-                          <SelectItem value="kraken">🟣 Kraken</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-slate-400 mb-1 block">Trading Type</Label>
-                      <Select defaultValue="spot">
-                        <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                          <SelectValue placeholder="Spot/Futures" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="spot">Spot</SelectItem>
-                          <SelectItem value="futures">Futures</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm text-slate-400 mb-1 block">Strategy</Label>
-                      <Select defaultValue="grid">
-                        <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                          <SelectValue placeholder="Choose strategy" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="grid">📊 Grid Trading</SelectItem>
-                          <SelectItem value="dca">💰 DCA (Dollar Cost Avg)</SelectItem>
-                          <SelectItem value="scalping">⚡ Scalping</SelectItem>
-                          <SelectItem value="arbitrage">🔄 Arbitrage</SelectItem>
-                          <SelectItem value="momentum">🚀 Momentum</SelectItem>
-                          <SelectItem value="mean-reversion">📈 Mean Reversion</SelectItem>
-                          <SelectItem value="trend-following">📉 Trend Following</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-slate-400 mb-1 block">Indicators</Label>
-                      <Select defaultValue="rsi">
-                        <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                          <SelectValue placeholder="Select indicator" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="rsi">RSI</SelectItem>
-                          <SelectItem value="macd">MACD</SelectItem>
-                          <SelectItem value="bollinger">Bollinger Bands</SelectItem>
-                          <SelectItem value="ema">EMA Crossover</SelectItem>
-                          <SelectItem value="vwap">VWAP</SelectItem>
-                          <SelectItem value="fibonacci">Fibonacci Levels</SelectItem>
-                          <SelectItem value="ichimoku">Ichimoku Cloud</SelectItem>
-                          <SelectItem value="custom">Custom Combo</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm text-slate-400 mb-1 block">Trading Pair</Label>
-                      <Select defaultValue="btc-usdt">
-                        <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="btc-usdt">BTC/USDT</SelectItem>
-                          <SelectItem value="eth-usdt">ETH/USDT</SelectItem>
-                          <SelectItem value="sol-usdt">SOL/USDT</SelectItem>
-                          <SelectItem value="bnb-usdt">BNB/USDT</SelectItem>
-                          <SelectItem value="multi">Multi-Asset</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-slate-400 mb-1 block">Max Budget ($)</Label>
-                      <Input type="number" placeholder="5000" className="bg-slate-800 border-slate-700 text-white" />
-                    </div>
-                  </div>
-
-                  {/* Risk Management Section */}
-                  <div className="border border-slate-700 rounded-lg p-3 space-y-3">
-                    <h4 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-amber-400" /> Risk Management
-                    </h4>
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50">
-                      <div>
-                        <div className="font-medium text-white flex items-center gap-2">
-                          <OctagonX className="h-4 w-4 text-red-400" /> Stop Loss Trigger
-                        </div>
-                        <div className="text-sm text-slate-400">Auto-stop bot when portfolio hits loss limit</div>
-                      </div>
-                      <Switch className="data-[state=checked]:bg-red-500" />
-                    </div>
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50">
-                      <div>
-                        <div className="font-medium text-white flex items-center gap-2">
-                          <CircleDollarSign className="h-4 w-4 text-green-400" /> Profit Trigger
-                        </div>
-                        <div className="text-sm text-slate-400">Auto-stop bot when target profit is reached</div>
-                      </div>
-                      <Switch className="data-[state=checked]:bg-green-500" />
-                    </div>
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50">
-                      <div>
-                        <div className="font-medium text-white flex items-center gap-2">
-                          <Crosshair className="h-4 w-4 text-amber-400" /> Trailing Stop
-                        </div>
-                        <div className="text-sm text-slate-400">Dynamic stop that follows profit upward</div>
-                      </div>
-                      <Switch className="data-[state=checked]:bg-amber-500" />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50">
-                    <div>
-                      <div className="font-medium text-white">Enable Live Trading</div>
-                      <div className="text-sm text-slate-400">Start placing real trades immediately</div>
+                      <div className="font-medium text-white">Leverage Settings</div>
+                      <div className="text-sm text-slate-400">Configure leverage for futures trading</div>
                     </div>
                     <Switch className="data-[state=checked]:bg-purple-600" />
                   </div>
@@ -418,9 +238,15 @@ export function CryptoBotPage() {
           </div>
         </div>
 
-        {/* Exchange Type Tab Content */}
-        {exchangeTypeTab === "cex" ? (
-          /* CEX Tab Content */
+        {/* Current Platform Indicator */}
+        <div className="mb-4 flex items-center gap-2">
+          <Badge variant="outline" className={exchangeType === "cex" ? "border-cyan-500/50 text-cyan-400" : "border-purple-500/50 text-purple-400"}>
+            {exchangeType === "cex" ? "CEX Mode — Centralized Exchange Bots" : "DEX Mode — Decentralized Exchange Bots"}
+          </Badge>
+        </div>
+
+        {/* CEX Tab Content */}
+        {exchangeType === "cex" ? (
           <div>
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -515,14 +341,25 @@ export function CryptoBotPage() {
         ) : (
           /* DEX Tab Content */
           <div className="text-center py-12">
-            <Zap className="h-12 w-12 text-slate-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-slate-400">Decentralized Exchange Bots</h3>
+            <Zap className="h-12 w-12 text-purple-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-purple-400">DEX — Decentralized Exchange Bots</h3>
             <p className="text-slate-500 mt-2">No DEX bots currently active. Switch to CEX to see centralized exchange bots.</p>
-            <Button className="mt-4 bg-slate-800 text-white hover:bg-slate-700" onClick={() => setExchangeTypeTab('cex')}>
+            <Button className="mt-4 bg-slate-800 text-white hover:bg-slate-700" onClick={() => setExchangeType('cex')}>
               Go to CEX
             </Button>
           </div>
         )}
+
+        {/* Platform switch hint */}
+        <div className="mt-6 text-center">
+          <p className="text-xs text-slate-500">
+            {exchangeType === "cex" ? (
+              <>Switch to <span className="text-purple-400 font-semibold">DEX</span> for decentralized exchange bots.</>
+            ) : (
+              <>Switch to <span className="text-cyan-400 font-semibold">CEX</span> for centralized exchange bots.</>
+            )}
+          </p>
+        </div>
       </section>
     </motion.div>
   )
