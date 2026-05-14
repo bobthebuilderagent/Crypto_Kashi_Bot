@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Search, Filter, TrendingUp, TrendingDown, BarChart3, Clock, Target, ChevronRight, Wallet, Plus, Activity, ArrowUpRight, ArrowDownRight, RefreshCw, Zap, Loader2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
@@ -13,12 +13,28 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { Progress } from "@/components/ui/progress"
-import { predictionMarkets, mockPositions } from "@/data/mock"
 
-// Platform-specific market data (filtered by active platform)
-function getFilteredMarkets(platform: string) {
-  if (platform === "all") return predictionMarkets
-  return predictionMarkets.filter(m => m.platform === platform)
+interface PredMarket {
+  id: string
+  title: string
+  platform: string
+  category: string
+  yesPrice: number
+  noPrice: number
+  volume: string
+  closeDate: string
+  liquidity: string
+}
+
+interface PredPosition {
+  id: string
+  marketId: string
+  marketTitle: string
+  side: string
+  shares: number
+  price: number
+  currentValue: number
+  pnl: number
 }
 
 export function PredictionMarketPage() {
@@ -31,15 +47,51 @@ export function PredictionMarketPage() {
   const [newMarketPlatform, setNewMarketPlatform] = useState("kalshi")
   const [startingPrice, setStartingPrice] = useState([50])
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [markets, setMarkets] = useState<PredMarket[]>([])
+  const [positions, setPositions] = useState<PredPosition[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/prediction-markets").then((r) => r.json()).catch(() => []),
+      fetch("/api/prediction-positions").then((r) => r.json()).catch(() => []),
+    ]).then(([mktData, posData]) => {
+      const mappedMarkets = mktData.map((m: any) => ({
+        id: m.id,
+        title: m.title,
+        platform: m.platform,
+        category: m.category,
+        yesPrice: m.yes_price,
+        noPrice: m.no_price,
+        volume: m.volume,
+        closeDate: m.close_date,
+        liquidity: m.liquidity,
+      }))
+      const mappedPositions = posData.map((p: any) => ({
+        id: p.id,
+        marketId: p.market_id,
+        marketTitle: p.market_title,
+        side: p.side,
+        shares: p.shares,
+        price: p.price,
+        currentValue: p.current_value,
+        pnl: p.pnl,
+      }))
+      setMarkets(mappedMarkets)
+      setPositions(mappedPositions)
+      setLoading(false)
+    })
+  }, [])
 
   const categories = ["all", "Finance", "Crypto", "Politics", "Sports", "Tech", "Economics", "Entertainment"]
 
-  const filteredMarkets = getFilteredMarkets(platformTab).filter(market => {
+  const filteredMarkets = markets.filter(market => {
+    const matchesPlatform = platformTab === "all" || market.platform === platformTab
     const matchesSearch = market.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           market.category.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = filterCategory === "all" || market.category.toLowerCase() === filterCategory.toLowerCase()
-    const matchesPlatform = filterPlatform === "all" || market.platform === filterPlatform.toLowerCase()
-    return matchesSearch && matchesCategory && matchesPlatform
+    const matchesFilterPlatform = filterPlatform === "all" || market.platform === filterPlatform.toLowerCase()
+    return matchesPlatform && matchesSearch && matchesCategory && matchesFilterPlatform
   })
 
   return (
@@ -52,7 +104,7 @@ export function PredictionMarketPage() {
       {/* Platform Toggle - All Platforms vs Kalshi vs Polymarket */}
       <div className="mb-6">
         <div className="flex justify-center">
-          <Tabs defaultValue={platformTab} className="w-full max-w-2xl" onValueChange={setPlatformTab}>
+          <Tabs value={platformTab} className="w-full max-w-2xl" onValueChange={setPlatformTab}>
             <TabsList className="bg-slate-800/50 border border-slate-700">
               <TabsTrigger value="all" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-500">
                 <span className="flex items-center gap-2">
@@ -91,7 +143,7 @@ export function PredictionMarketPage() {
           {platformTab === "all" ? "🔥 All Platforms" : platformTab === "kalshi" ? "🎨 Kalshi" : "🌐 Polymarket"}
         </Badge>
         <span className="text-xs text-slate-500">•</span>
-        <span className="text-xs text-slate-400">{filteredMarkets.length} markets</span>
+        <span className="text-xs text-slate-400">{loading ? "..." : filteredMarkets.length} markets</span>
       </div>
 
       {/* Stats bar */}
@@ -103,7 +155,7 @@ export function PredictionMarketPage() {
             </div>
             <div>
               <div className="text-lg font-bold text-white">
-                {platformTab === "kalshi" ? "$1.4M" : "$1.0M"}
+                {loading ? "..." : `$${(markets.reduce((sum, m) => sum + (parseFloat(m.volume.replace(/[$,KBbMm]/g, "")) * 1000 || 0), 0) / 1000).toFixed(1)}K`}
               </div>
               <div className="text-xs text-slate-400">Total Volume</div>
             </div>
@@ -116,7 +168,7 @@ export function PredictionMarketPage() {
             </div>
             <div>
               <div className="text-lg font-bold text-white">
-                {platformTab === "kalshi" ? "28" : "19"}
+                {loading ? "..." : markets.length}
               </div>
               <div className="text-xs text-slate-400">Active Markets</div>
             </div>
@@ -129,7 +181,7 @@ export function PredictionMarketPage() {
             </div>
             <div>
               <div className="text-lg font-bold text-white">
-                {platformTab === "kalshi" ? "8" : "4"}
+                {loading ? "..." : "0"}
               </div>
               <div className="text-xs text-slate-400">Settled Today</div>
             </div>
@@ -141,7 +193,7 @@ export function PredictionMarketPage() {
               <Wallet className="w-5 h-5 text-pink-400" />
             </div>
             <div>
-              <div className="text-lg font-bold text-white">$847K</div>
+              <div className="text-lg font-bold text-white">${loading ? "..." : positions.reduce((sum, p) => sum + p.currentValue, 0).toLocaleString()}</div>
               <div className="text-xs text-slate-400">My Holdings</div>
             </div>
           </CardContent>
@@ -160,40 +212,45 @@ export function PredictionMarketPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+
+          <Button variant="outline" className="border-slate-700 bg-slate-900/50 text-white" onClick={() => setIsFilterOpen(true)}>
+            <Filter className="w-4 h-4 mr-2" />
+            Filters
+          </Button>
+
           <Dialog open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-            <span className="cursor-pointer">
-              <Button variant="outline" className="border-slate-700 bg-slate-900/50 text-white">
-                <Filter className="w-4 h-4 mr-2" />
-                Filters
-              </Button>
-            </span>
-            <DialogContent className="bg-slate-950 border-slate-700 text-white">
+            <DialogContent className="bg-slate-900 border-slate-700 text-white">
               <DialogHeader>
                 <DialogTitle>Filter Markets</DialogTitle>
+                <DialogDescription className="text-slate-400">
+                  Narrow down markets by category and platform.
+                </DialogDescription>
               </DialogHeader>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-4">
                 <div>
                   <Label className="text-sm text-slate-400 mb-1 block">Category</Label>
-                  <Select value={filterCategory} onValueChange={(v: string | null) => setFilterCategory(v ?? "all")}>
+                  <Select value={filterCategory} onValueChange={(v) => setFilterCategory(v ?? "all")}>
                     <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                      <SelectValue placeholder="Select" />
+                      <SelectValue />
                     </SelectTrigger>
-                    {categories.map(cat => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                      </SelectItem>
-                    ))}
+                    <SelectContent>
+                      {categories.map(cat => (
+                        <SelectItem key={cat} value={cat}>{cat === "all" ? "All Categories" : cat}</SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label className="text-sm text-slate-400 mb-1 block">Platform</Label>
-                  <Select value={filterPlatform} onValueChange={(v: string | null) => setFilterPlatform(v ?? "all")}>
+                  <Select value={filterPlatform} onValueChange={(v) => setFilterPlatform(v ?? "all")}>
                     <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                      <SelectValue placeholder="Select" />
+                      <SelectValue />
                     </SelectTrigger>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="kalshi">Kalshi (NFT-backed)</SelectItem>
-                    <SelectItem value="polymarket">Polymarket</SelectItem>
+                    <SelectContent>
+                      <SelectItem value="all">All Platforms</SelectItem>
+                      <SelectItem value="kalshi">Kalshi</SelectItem>
+                      <SelectItem value="polymarket">Polymarket</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
               </div>
@@ -355,7 +412,7 @@ export function PredictionMarketPage() {
 
         <TabsContent value="positions">
           <div className="grid gap-4">
-            {mockPositions.length === 0 ? (
+            {positions.length === 0 ? (
               <Card className="bg-slate-900/50 border-slate-700">
                 <CardContent className="p-8 text-center">
                   <Wallet className="h-12 w-12 text-slate-600 mx-auto mb-3" />
@@ -364,7 +421,7 @@ export function PredictionMarketPage() {
                 </CardContent>
               </Card>
             ) : (
-              mockPositions.map((position, i) => (
+              positions.map((position, i) => (
                 <motion.div
                   key={position.id}
                   initial={{ y: 20, opacity: 0 }}

@@ -75,12 +75,27 @@ export const PREDICTION_PRESETS: Omit<PredictionConnection, 'apiKey' | 'walletAd
   { id: 'polymarket', platform: 'polymarket' },
 ]
 
+// ─── Favorites Types ─────────────────────────────────
+export interface CryptoFavorite {
+  symbol: string
+  name: string
+  icon: string
+}
+
+export interface PredictionFavorite {
+  id: string
+  title: string
+  platform: string
+}
+
 // ─── Storage Keys ────────────────────────────────────────
 
 const STORAGE_KEYS = {
-  CEX: 'kalshi_cex_connections',
-  DEX: 'kalshi_dex_connections',
-  PREDICTION: 'kalshi_prediction_connections',
+  CEX: 'crypto_kalshi_bot_cex_connections',
+  DEX: 'crypto_kalshi_bot_dex_connections',
+  PREDICTION: 'crypto_kalshi_bot_prediction_platforms',
+  CRYPTO_FAV: 'crypto_kalshi_bot_crypto_favorites',
+  PRED_FAV: 'crypto_kalshi_bot_prediction_favorites',
 } as const
 
 // ─── Helper: load from localStorage ──────────────────────
@@ -128,6 +143,12 @@ interface SettingsContextType {
   updatePrediction: (id: string, key: keyof PredictionConnection, value: string | boolean) => void
   testPredictionConnection: (id: string) => Promise<boolean>
   addPrediction: (preset: Omit<PredictionConnection, 'connected' | 'apiKey' | 'walletAddress'>) => void
+
+  // Favorites
+  cryptoFavorites: CryptoFavorite[]
+  toggleCryptoFavorite: (fav: CryptoFavorite) => void
+  predictionFavorites: PredictionFavorite[]
+  togglePredictionFavorite: (fav: PredictionFavorite) => void
 
   // Global
   isTesting: boolean
@@ -283,6 +304,45 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setPredictionState(prev => [...prev, newConn])
   }, [])
 
+  // ── Favorites ──
+
+  const [cryptoFavorites, setCryptoFavorites] = useState<CryptoFavorite[]>(() =>
+    loadFromStorage(STORAGE_KEYS.CRYPTO_FAV, [])
+  )
+
+  const [predictionFavorites, setPredictionFavorites] = useState<PredictionFavorite[]>(() =>
+    loadFromStorage(STORAGE_KEYS.PRED_FAV, [])
+  )
+
+  // Auto-save favorites
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.CRYPTO_FAV, cryptoFavorites)
+  }, [cryptoFavorites])
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.PRED_FAV, predictionFavorites)
+  }, [predictionFavorites])
+
+  const toggleCryptoFavorite = useCallback((fav: CryptoFavorite) => {
+    setCryptoFavorites(prev => {
+      const exists = prev.find(f => f.symbol === fav.symbol)
+      if (exists) {
+        return prev.filter(f => f.symbol !== fav.symbol)
+      }
+      return [...prev, fav]
+    })
+  }, [])
+
+  const togglePredictionFavorite = useCallback((fav: PredictionFavorite) => {
+    setPredictionFavorites(prev => {
+      const exists = prev.find(f => f.id === fav.id)
+      if (exists) {
+        return prev.filter(f => f.id !== fav.id)
+      }
+      return [...prev, fav]
+    })
+  }, [])
+
   // ── Global ──
 
   const testAll = useCallback(async (): Promise<boolean> => {
@@ -326,6 +386,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       updatePrediction,
       testPredictionConnection,
       addPrediction,
+      cryptoFavorites,
+      toggleCryptoFavorite,
+      predictionFavorites,
+      togglePredictionFavorite,
       isTesting,
       testAll,
       saveAll,

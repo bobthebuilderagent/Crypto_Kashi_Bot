@@ -24,63 +24,44 @@ interface Position {
 
 export function MyPositionsPage() {
   const [platformTab, setPlatformTab] = useState("all")
-  const [positions, setPositions] = useState<Position[]>([
-    {
-      id: "1",
-      marketId: "m1",
-      marketTitle: "Bitcoin to hit $100K by end of 2026",
-      question: "Will Bitcoin reach $100,000 USD before December 31, 2026?",
-      type: "YES",
-      amount: 50,
-      cost: 25.00,
-      potentialProfit: 75.00,
-      status: "OPEN",
-      roi: 200,
-      platform: "Polymarket",
-    },
-    {
-      id: "2",
-      marketId: "m2",
-      marketTitle: "Ethereum ETF approval",
-      question: "Will the SEC approve a spot Ethereum ETF in Q3 2026?",
-      type: "NO",
-      amount: 100,
-      cost: 45.00,
-      potentialProfit: 55.00,
-      status: "OPEN",
-      roi: 22,
-      platform: "Kalshi",
-    },
-    {
-      id: "3",
-      marketId: "m3",
-      marketTitle: "Solana network upgrade",
-      question: "Will Solana complete its Firedancer upgrade by June 2026?",
-      type: "YES",
-      amount: 75,
-      cost: 30.00,
-      potentialProfit: 90.00,
-      status: "OPEN",
-      roi: 200,
-      platform: "Polymarket",
-    },
-    {
-      id: "4",
-      marketId: "m4",
-      marketTitle: "US election 2026 outcome",
-      question: "Will the incumbent win re-election in 2026?",
-      type: "NO",
-      amount: 200,
-      cost: 90.00,
-      potentialProfit: 110.00,
-      status: "OPEN",
-      roi: 22,
-      platform: "Kalshi",
-    },
-  ])
-
+  const [positions, setPositions] = useState<Position[]>([])
   const [resolvedPositions, setResolvedPositions] = useState<Position[]>([])
   const [expandedMarket, setExpandedMarket] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch("/api/prediction-positions")
+      .then((r) => r.json())
+      .then((data) => {
+        // Map database fields to component fields
+        const mapped = data.map((p: any) => ({
+          id: p.id,
+          marketId: p.market_id,
+          marketTitle: p.market_title,
+          question: p.market_title,
+          type: p.side === "yes" ? "YES" : "NO",
+          amount: p.shares,
+          cost: p.price,
+          potentialProfit: p.current_value,
+          status: p.status === "resolved" ? "RESOLVED" : "OPEN",
+          outcome: p.outcome ? (p.outcome === "yes" ? "YES" : "NO") : undefined,
+          roi: p.pnl,
+          platform: "",
+        }))
+
+        // Separate open and resolved positions
+        const open = mapped.filter((p: Position) => p.status === "OPEN")
+        const resolved = mapped.filter((p: Position) => p.status === "RESOLVED")
+        setPositions(open)
+        setResolvedPositions(resolved)
+        setLoading(false)
+      })
+      .catch(() => {
+        setPositions([])
+        setResolvedPositions([])
+        setLoading(false)
+      })
+  }, [])
 
   const filteredPositions = platformTab === "all" ? positions : positions.filter(p => p.platform.toLowerCase() === platformTab)
 
@@ -95,7 +76,7 @@ export function MyPositionsPage() {
         {/* Platform Toggle */}
         <div className="mb-6">
           <div className="flex justify-center">
-            <Tabs defaultValue={platformTab} className="w-full max-w-2xl" onValueChange={setPlatformTab}>
+            <Tabs value={platformTab} className="w-full max-w-2xl" onValueChange={setPlatformTab}>
               <TabsList className="bg-slate-800/50 border border-slate-700">
                 <TabsTrigger value="all" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-500">
                   <span className="flex items-center gap-2">
@@ -269,7 +250,7 @@ export function MyPositionsPage() {
                   </div>
                   ) : (
                     <div className="flex items-center py-4">
-                      <span className="text-slate-600 text-sm italic">Click to expand position details...</span>
+                      <span className="text-slate-600 text-sm italic">{loading ? "Loading positions..." : "Click to expand position details..."}</span>
                     </div>
                   )}
                 </CardContent>

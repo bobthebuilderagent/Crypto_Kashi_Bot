@@ -1,7 +1,6 @@
 "use client"
 
-import React from "react"
-import { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Search, Filter, Download, ChevronDown, ChevronUp, RefreshCw, Eye, Copy, X, Zap, CircleDollarSign } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
@@ -9,37 +8,83 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { mockBots, mockTrades } from "@/data/mock"
 import { useAppContext } from "@/lib/providers"
 
-// CEX trades
-const cexTrades = [
-  { id: 't-1', botId: 'cex-1', symbol: 'BTC/USDT', side: 'buy', price: 65000, volume: 0.5, pnl: 125.50, timestamp: '2026-04-26T14:30:00Z', status: 'closed', exchange: 'Binance', type: 'spot' },
-  { id: 't-2', botId: 'cex-2', symbol: 'ETH/USDT', side: 'sell', price: 3600, volume: 2.0, pnl: 345.20, timestamp: '2026-04-26T15:15:00Z', status: 'closed', exchange: 'Coinbase Pro', type: 'futures' },
-  { id: 't-3', botId: 'cex-4', symbol: 'SOL/USDT', side: 'buy', price: 170, volume: 10.0, pnl: -23.40, timestamp: '2026-04-26T16:00:00Z', status: 'closed', exchange: 'Kraken', type: 'spot' },
-  { id: 't-4', botId: 'cex-1', symbol: 'BTC/USDT', side: 'sell', price: 66500, volume: 0.5, pnl: 775.00, timestamp: '2026-04-26T17:30:00Z', status: 'closed', exchange: 'Binance', type: 'spot' },
-  { id: 't-5', botId: 'cex-2', symbol: 'ETH/USDT', side: 'buy', price: 3400, volume: 2.0, pnl: 120.80, timestamp: '2026-04-26T18:00:00Z', status: 'closed', exchange: 'Coinbase Pro', type: 'futures' },
-  { id: 't-6', botId: 'cex-4', symbol: 'BTC/USDT', side: 'buy', price: 67000, volume: 0.3, pnl: -45.20, timestamp: '2026-04-26T18:45:00Z', status: 'closed', exchange: 'Binance US', type: 'futures' },
-]
-
-// DEX trades
-const dexTrades = [
-  { id: 'dt-1', botId: 'dex-1', symbol: 'BTC/ETH', side: 'buy', price: 19.45, volume: 2.5, pnl: 89.30, timestamp: '2026-04-26T14:30:00Z', status: 'closed', exchange: 'Uniswap V3', type: 'spot' },
-  { id: 'dt-2', botId: 'dex-2', symbol: 'SOL/USDC', side: 'sell', price: 178.50, volume: 15.0, pnl: 234.50, timestamp: '2026-04-26T15:15:00Z', status: 'closed', exchange: 'Raydium', type: 'spot' },
-  { id: 'dt-3', botId: 'dex-4', symbol: 'ETH/USDC', side: 'buy', price: 3455.00, volume: 1.0, pnl: -12.30, timestamp: '2026-04-26T16:00:00Z', status: 'closed', exchange: 'Uniswap V3', type: 'spot' },
-  { id: 'dt-4', botId: 'dex-1', symbol: 'BTC/ETH', side: 'sell', price: 19.50, volume: 2.5, pnl: 123.40, timestamp: '2026-04-26T17:30:00Z', status: 'closed', exchange: 'Uniswap V3', type: 'spot' },
-  { id: 'dt-5', botId: 'dex-2', symbol: 'SOL/USDC', side: 'buy', price: 178.20, volume: 15.0, pnl: 67.80, timestamp: '2026-04-26T18:00:00Z', status: 'closed', exchange: 'Raydium', type: 'spot' },
-  { id: 'dt-6', botId: 'dex-3', symbol: 'WBTC/ETH', side: 'sell', price: 19.42, volume: 1.0, pnl: -45.60, timestamp: '2026-04-26T18:45:00Z', status: 'closed', exchange: 'Uniswap V2', type: 'spot' },
-]
+interface Trade {
+  id: string
+  botId: string
+  symbol: string
+  side: string
+  price: number
+  volume: number
+  pnl: number
+  timestamp: string
+  status: string
+  exchange: string
+  type: string
+}
 
 export function TradeHistoryPage() {
   const { exchangeType, setExchangeType } = useAppContext()
+  const [cexTrades, setCexTrades] = useState<Trade[]>([])
+  const [dexTrades, setDexTrades] = useState<Trade[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterExchange, setFilterExchange] = useState<string | null>("all")
   const [filterSide, setFilterSide] = useState<string | null>("all")
   const [filterType, setFilterType] = useState<string | null>("all")
   const [expandedTrades, setExpandedTrades] = useState<Record<string, boolean>>({})
   const [sortBy, setSortBy] = useState<string | null>("date")
+
+  // Fetch trades from API on mount
+  useEffect(() => {
+    const fetchTrades = async () => {
+      try {
+        const [cexRes, dexRes] = await Promise.all([
+          fetch("/api/trades?exchange_type=cex&limit=1000"),
+          fetch("/api/trades?exchange_type=dex&limit=1000"),
+        ])
+        const [cexData, dexData] = await Promise.all([cexRes.json(), dexRes.json()])
+
+        // Map bot_id -> botId and add type field (default to 'spot' if missing)
+        setCexTrades(
+          cexData.map((t: any) => ({
+            id: t.id,
+            botId: t.bot_id,
+            symbol: t.symbol,
+            side: t.side,
+            price: t.price,
+            volume: t.volume,
+            pnl: t.pnl,
+            timestamp: t.timestamp,
+            status: t.status,
+            exchange: t.exchange,
+            type: t.type || "spot",
+          }))
+        )
+        setDexTrades(
+          dexData.map((t: any) => ({
+            id: t.id,
+            botId: t.bot_id,
+            symbol: t.symbol,
+            side: t.side,
+            price: t.price,
+            volume: t.volume,
+            pnl: t.pnl,
+            timestamp: t.timestamp,
+            status: t.status,
+            exchange: t.exchange,
+            type: t.type || "spot",
+          }))
+        )
+      } catch (err) {
+        console.error("Failed to fetch trades:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchTrades()
+  }, [])
 
   // Select trades based on exchange type
   const trades = exchangeType === "cex" ? cexTrades : dexTrades

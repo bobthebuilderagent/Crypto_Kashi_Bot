@@ -1,8 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { predictionMarkets, mockPositions } from "@/data/mock"
 import { Target, TrendingUp, DollarSign, BarChart3, Search, Flame, Plus, ArrowUpRight, ArrowDownRight, Wallet, Clock } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -16,19 +15,78 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 
+interface PredMarket {
+  id: string
+  title: string
+  platform: string
+  category: string
+  yesPrice: number
+  noPrice: number
+  volume: string
+  closeDate: string
+  liquidity: string
+}
+
+interface PredPosition {
+  id: string
+  marketId: string
+  marketTitle: string
+  side: string
+  shares: number
+  price: number
+  currentValue: number
+  pnl: number
+}
+
 export function PredictionsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("All")
   const [activeTab, setActiveTab] = useState("markets")
+  const [markets, setMarkets] = useState<PredMarket[]>([])
+  const [positions, setPositions] = useState<PredPosition[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const filteredMarkets = predictionMarkets.filter((market) => {
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/prediction-markets").then((r) => r.json()).catch(() => []),
+      fetch("/api/prediction-positions").then((r) => r.json()).catch(() => []),
+    ]).then(([mktData, posData]) => {
+      // Map DB fields to component fields
+      const mappedMarkets = mktData.map((m: any) => ({
+        id: m.id,
+        title: m.title,
+        platform: m.platform,
+        category: m.category,
+        yesPrice: m.yes_price,
+        noPrice: m.no_price,
+        volume: m.volume,
+        closeDate: m.close_date,
+        liquidity: m.liquidity,
+      }))
+      const mappedPositions = posData.map((p: any) => ({
+        id: p.id,
+        marketId: p.market_id,
+        marketTitle: p.market_title,
+        side: p.side,
+        shares: p.shares,
+        price: p.price,
+        currentValue: p.current_value,
+        pnl: p.pnl,
+      }))
+      setMarkets(mappedMarkets)
+      setPositions(mappedPositions)
+      setLoading(false)
+    })
+  }, [])
+
+  const filteredMarkets = markets.filter((market) => {
     const matchesSearch = market.title.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = categoryFilter === "All" || market.category === categoryFilter
     return matchesSearch && matchesCategory
   })
 
-  const totalValue = mockPositions.reduce((sum, pos) => sum + pos.currentValue, 0)
-  const totalPnl = mockPositions.reduce((sum, pos) => sum + pos.pnl, 0)
+  const totalValue = positions.reduce((sum, pos) => sum + pos.currentValue, 0)
+  const totalPnl = positions.reduce((sum, pos) => sum + pos.pnl, 0)
 
   return (
     <motion.div
@@ -54,13 +112,13 @@ export function PredictionsPage() {
             },
             {
               label: "Active Positions",
-              value: mockPositions.length.toString(),
+              value: positions.length.toString(),
               icon: <BarChart3 className="h-5 w-5 text-cyan-400" />,
               color: "from-cyan-600 to-blue-500"
             },
             {
               label: "Win Rate",
-              value: "81.3%",
+              value: loading ? "..." : "N/A",
               icon: <Target className="h-5 w-5 text-amber-400" />,
               color: "from-amber-600 to-yellow-500"
             },
@@ -78,7 +136,7 @@ export function PredictionsPage() {
                     {stat.icon}
                     <span className="text-sm text-slate-400">{stat.label}</span>
                   </div>
-                  <div className="text-2xl font-bold">{stat.value}</div>
+                  <div className="text-2xl font-bold">{loading ? "..." : stat.value}</div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -97,7 +155,7 @@ export function PredictionsPage() {
               <Flame className="h-6 w-6 text-orange-400 animate-pulse" />
               <div>
                 <h3 className="font-semibold text-white">🔥 Hot Markets</h3>
-                <p className="text-sm text-slate-400">BTC and ETH markets are trending with high volume</p>
+                <p className="text-sm text-slate-400">{markets.length > 0 ? `${markets.length} markets loaded from live data` : "Loading markets..."}</p>
               </div>
             </div>
           </div>
@@ -108,7 +166,7 @@ export function PredictionsPage() {
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold text-white">Prediction Markets</h2>
             <Badge variant="outline" className="border-purple-500/50 text-purple-400">
-              {filteredMarkets.length} Markets
+              {loading ? "..." : filteredMarkets.length} Markets
             </Badge>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
@@ -154,12 +212,12 @@ export function PredictionsPage() {
                 <div className="grid gap-4 py-4">
                   <div>
                     <Label className="text-sm text-slate-400 mb-1 block">Market</Label>
-                    <Select defaultValue="mkt-1">
+                    <Select defaultValue={markets[0]?.id || ""}>
                       <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
                         <SelectValue placeholder="Select market" />
                       </SelectTrigger>
                       <SelectContent>
-                        {predictionMarkets.map(m => (
+                        {markets.map(m => (
                           <SelectItem key={m.id} value={m.id}>{m.title}</SelectItem>
                         ))}
                       </SelectContent>
@@ -243,12 +301,12 @@ export function PredictionsPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label className="text-sm text-slate-400 mb-1 block">Target Market</Label>
-                      <Select defaultValue="mkt-1">
+                      <Select defaultValue={markets[0]?.id || ""}>
                         <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
                           <SelectValue placeholder="Select market" />
                         </SelectTrigger>
                         <SelectContent>
-                          {predictionMarkets.map(m => (
+                          {markets.map(m => (
                             <SelectItem key={m.id} value={m.id}>{m.title}</SelectItem>
                           ))}
                         </SelectContent>
@@ -344,11 +402,11 @@ export function PredictionsPage() {
                           </div>
                           <div className="flex items-center gap-4 ml-4">
                             <div className="text-center">
-                              <div className="text-2xl font-bold text-green-400">{(market.yesPrice * 100).toFixed(0)}¢</div>
+                              <div className={`text-2xl font-bold ${yesColor}`}>{(market.yesPrice * 100).toFixed(0)}¢</div>
                               <div className="text-xs text-slate-400">Yes</div>
                             </div>
                             <div className="text-center">
-                              <div className="text-2xl font-bold text-red-400">{(market.noPrice * 100).toFixed(0)}¢</div>
+                              <div className={`text-2xl font-bold ${noColor}`}>{(market.noPrice * 100).toFixed(0)}¢</div>
                               <div className="text-xs text-slate-400">No</div>
                             </div>
                             <div className="w-2 h-20 bg-slate-800 rounded-full overflow-hidden">
@@ -372,7 +430,7 @@ export function PredictionsPage() {
 
           <TabsContent value="positions">
             <div className="grid gap-4">
-              {mockPositions.length === 0 ? (
+              {positions.length === 0 ? (
                 <Card className="bg-slate-900/50 border-slate-700">
                   <CardContent className="p-8 text-center">
                     <Wallet className="h-12 w-12 text-slate-600 mx-auto mb-3" />
@@ -381,7 +439,7 @@ export function PredictionsPage() {
                   </CardContent>
                 </Card>
               ) : (
-                mockPositions.map((position, i) => (
+                positions.map((position, i) => (
                   <motion.div
                     key={position.id}
                     initial={{ y: 20, opacity: 0 }}

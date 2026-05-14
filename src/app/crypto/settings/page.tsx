@@ -1,7 +1,7 @@
 "use client"
 
-import { CryptoSettingsPage } from "@/components/pages/CryptoSettingsPage"
+import { UnifiedSettingsPage } from "@/components/pages/UnifiedSettingsPage"
 
 export default function CryptoSettingsRoute() {
-  return <CryptoSettingsPage />
+  return <UnifiedSettingsPage />
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Calendar, Clock, TrendingUp, Search, Filter, Bell, Share2, Plus, Zap } from "lucide-react"
@@ -8,16 +8,35 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { predictionMarkets } from "@/data/mock"
+
+interface PredMarket {
+  id: string
+  title: string
+  platform: string
+  category: string
+  yes_price: number
+  no_price: number
+  volume: string
+  close_date: string
+  liquidity: string
+}
 
 export function UpcomingMarketsPage() {
   const [platformTab, setPlatformTab] = useState("all")
   const [searchTerm, setSearchTerm] = useState("")
   const [filterCategory, setFilterCategory] = useState("all")
+  const [markets, setMarkets] = useState<PredMarket[]>([])
+
+  useEffect(() => {
+    fetch("/api/prediction-markets")
+      .then((res) => res.json())
+      .then((data) => setMarkets(data))
+      .catch(() => setMarkets([]))
+  }, [])
 
   const categories = ["all", "Finance", "Crypto", "Politics", "Sports", "Tech", "Economics", "Entertainment"]
 
-  const filteredMarkets = predictionMarkets.filter(market => {
+  const filteredMarkets = markets.filter(market => {
     const matchesSearch = market.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           market.category.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = filterCategory === "all" || market.category.toLowerCase() === filterCategory.toLowerCase()
@@ -25,13 +44,15 @@ export function UpcomingMarketsPage() {
     return matchesSearch && matchesCategory && matchesPlatform
   })
 
+  const filteredCount = markets.filter(m => m.platform === platformTab || platformTab === "all").length
+
   return (
     <div className="min-h-screen bg-slate-950">
       <div className="mx-auto max-w-7xl px-4 py-8">
         {/* Platform Toggle */}
         <div className="mb-6">
           <div className="flex justify-center">
-            <Tabs defaultValue={platformTab} className="w-full max-w-2xl" onValueChange={setPlatformTab}>
+            <Tabs value={platformTab} className="w-full max-w-2xl" onValueChange={setPlatformTab}>
               <TabsList className="bg-slate-800/50 border border-slate-700">
                 <TabsTrigger value="all" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-500">
                   <span className="flex items-center gap-2">
@@ -70,7 +91,7 @@ export function UpcomingMarketsPage() {
                 <Calendar className="w-5 h-5 text-purple-400" />
               </div>
               <div>
-                <div className="text-lg font-bold text-white">{predictionMarkets.filter(m => m.platform === platformTab || platformTab === "all").length}</div>
+                <div className="text-lg font-bold text-white">{filteredCount}</div>
                 <div className="text-xs text-slate-400">Upcoming</div>
               </div>
             </CardContent>
@@ -92,8 +113,8 @@ export function UpcomingMarketsPage() {
                 <Plus className="w-5 h-5 text-pink-400" />
               </div>
               <div>
-                <div className="text-lg font-bold text-white">8</div>
-                <div className="text-xs text-slate-400">New This Week</div>
+                <div className="text-lg font-bold text-white">{markets.length}</div>
+                <div className="text-xs text-slate-400">Total Markets</div>
               </div>
             </CardContent>
           </Card>
@@ -153,7 +174,7 @@ export function UpcomingMarketsPage() {
                       </div>
                       <h3 className="font-semibold text-white mb-2">{market.title}</h3>
                       <div className="text-xs text-slate-400">
-                        <span className="text-pink-400">Closes: {market.closeDate}</span>
+                        <span className="text-pink-400">Closes: {market.close_date}</span>
                       </div>
                     </div>
                     <div className="text-right">

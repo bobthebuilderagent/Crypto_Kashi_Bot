@@ -286,6 +286,131 @@ Both settings pages now use a consistent professional layout.
 
 ---
 
+## 🎯 Prediction Market & Settings Work (from OTHER_TODOS)
+
+### Completed — Prediction Market Platform Toggle
+- **PredictionMarketPage:** Added "All Platforms" toggle (3 tabs: All / Kalshi / Polymarket)
+- **PredictionsSettingsPage:** Fixed platform toggle on General tab (was calling empty function)
+- **PredictionsSettingsPage:** Added platform toggle (Kalshi/Polymarket) to ALL 5 settings tabs
+- **PredictionsSettingsPage:** Split settings into platform-specific sub-objects:
+  - General tab: Platform toggle + shared profile settings + per-platform API config
+  - Predictions tab: Platform-specific prediction amounts, auto-stake, risk level
+  - Notifications tab: Platform-specific notifications + advanced alerts (price/volume)
+  - Security tab: Platform-specific security + advanced security (whitelist, IP filtering)
+  - Account tab: Platform-specific account management (API creds, wallet, position limits)
+- **Fixed React warning:** "A component is changing the default value state of an uncontrolled Tabs"
+  - Root cause: Tabs used `defaultValue` (uncontrolled) + `onValueChange` (controlled)
+  - Fix: Changed `defaultValue` to `value` (fully controlled) in ALL 5 files
+- **TypeScript build passes clean** (`npx tsc --noEmit`)
+
+---
+
+## 🔄 Settings Reorganization & DEX Fine-Tuning Phases
+
+### Phase 1: Analysis & Planning ✅ DONE
+- Analyzed `CryptoSettingsPage.tsx` (780 lines) — standalone page with mock data
+- Analyzed `SettingsDialogContent.tsx` (479 lines) — dialog with real context
+- Analyzed SettingsProvider context (`settings.tsx`) — manages CEX/DEX/Prediction connections
+- Analyzed `PredictionsSettingsPage.tsx` (892 lines) — platform-specific settings
+- **Identified issues:**
+  - CryptoSettingsPage uses mock data, doesn't use SettingsProvider
+  - SettingsDialogContent is a dialog, not a full page
+  - Settings categories are mixed (notifications mixed with API keys)
+  - DEX protocol settings not properly separated
+  - Missing: Email IMAP/SMTP, Discord, Telegram notification settings
+  - No clear separation between network API keys and DEX protocol settings
+
+### Phase 2: CEX Settings Rework
+1. Wire into SettingsProvider — use `useSettings()` for real CEX/DEX connections
+2. Replace mock exchange list — use `US_CEX_PRESETS` from context (Coinbase Pro, Kraken, Binance US, Bybit US, Deribit, OKX US)
+3. Each category tab gets real data:
+   - **General:** Bot name, display currency, timezone, performance tracking
+   - **Trading:** Order type, risk level, leverage, max position size, daily loss limit, stop loss, paper trading toggle
+   - **API Keys:** List actual CEX connections with API key/secret fields, test connection button, remove button
+   - **Wallets:** Connected wallets, token approvals
+   - **Notifications:** Email (IMAP/SMTP), Discord webhook, Telegram bot, push alerts
+
+### Phase 2.2: Create Unified Settings Page Structure ✅ DONE
+- `src/components/pages/UnifiedSettingsPage.tsx` ✅
+- `src/components/pages/SettingsContent.tsx` ✅
+- `src/components/pages/SettingsSidebar.tsx` ✅
+- `src/components/pages/CEXSettingsPanel.tsx` ✅
+- `src/components/pages/DEXSettingsPanel.tsx` ✅
+- `src/components/pages/NotificationSettings.tsx` (Email/IMAP/SMTP, Discord, Telegram) ✅
+- `src/components/pages/APIKeysSettings.tsx` (Network RPCs, Exchange keys, DEX keys) ✅
+- `src/components/pages/TradingSettings.tsx` (Strategy, risk management) ✅
+- `src/components/pages/SecuritySettings.tsx` (2FA, session timeout, IP filtering) ✅
+- `src/components/pages/WalletSettings.tsx` (Connected wallets, token approvals) ✅
+- Wired up CEX/DEX platform toggle in UnifiedSettingsPage ✅
+- Updated settings route to use UnifiedSettingsPage ✅
+
+### Phase 3: Reorganize Settings Categories
+- **New categories:**
+  - General: Bot name, currency, timezone, display
+  - Notifications: Email (IMAP/SMTP), Discord, Telegram, Push
+  - API Keys: Network RPCs (Ethereum, Solana), Exchange keys (CEX), DEX protocol keys
+  - Wallets: Connected wallets, token approvals
+  - Trading: Strategy, risk management, order types
+  - Security: 2FA, session timeout, IP filtering
+- Each category gets its own component file
+- Sidebar navigation with icons and active state
+
+### Phase 3.5: Paper Trading Integration (DEX + CEX)
+- Add "Paper Trading" toggle to Trading settings category
+- Paper trading simulates trades without real funds:
+  - DEX: Simulate swaps, add/remove liquidity, approvals
+  - CEX: Simulate limit/market orders, leverage positions
+  - Arb bot: Simulate arbitrage opportunities
+  - Strategy builder: Test custom strategies with virtual funds
+- **UI Components:** Virtual wallet balance ($10k virtual USD), trade history (paper vs real), virtual P&L tracking, execution log
+- **Affects CEX & DEX panels:** When enabled, orders/swaps are simulated (no real trades/txs)
+- Add `PaperTradingContext` or integrate into existing SettingsProvider
+- Store paper trading state in localStorage
+- Paper trading mode indicator in header (green "PAPER" badge)
+
+### Phase 4: DEX Protocol Settings
+- `DEXSettingsPanel.tsx`: Protocol-specific tabs (Uniswap, Raydium, PancakeSwap, Aave)
+- Each protocol: Network selection, RPC URL, slippage, gas settings
+- Wallet connection (MetaMask, WalletConnect)
+- Liquidity pool settings (auto-liquidity, thresholds)
+- Token approvals section
+
+### Phase 5: Notification Settings
+- Email (IMAP/SMTP): Host, port, username, password, enabled toggle
+- Discord: Webhook URL, bot token, enabled toggle
+- Telegram: Bot token, chat ID, enabled toggle
+- Push notifications: Toggle and alert types
+
+### Phase 6: API Keys Organization
+- Network API Keys: Ethereum RPC, Solana RPC, Polygon RPC, etc.
+- Exchange API Keys: Binance, Coinbase, Kraken, etc. (CEX)
+- DEX Protocol Keys: Uniswap, Aave, etc. (if applicable)
+- Each key: Name, Key/Secret fields, test connection button
+
+### Phase 7: Integrate with Settings Provider
+- Wire all components to `useSettings()` context
+- Replace mock data with real context state
+- Add save/load handlers for localStorage persistence
+- Add Import/Export JSON buttons
+
+### Phase 8: Cleanup & Deprecation
+- Mark `CryptoSettingsPage.tsx` as deprecated (keep for reference)
+- Mark `SettingsDialogContent.tsx` as deprecated (keep for reference)
+- Update `page.tsx` to use UnifiedSettingsPage
+- Ensure TypeScript build passes clean
+
+### Phase 9: Testing & Verification
+- Test each settings category independently
+- Test DEX protocol switching
+- Test notification settings save/load
+- Test API key test connection
+- Test localStorage persistence across reloads
+- Verify no console errors
+- `npx tsc --noEmit` (TypeScript build)
+- Verify settings survive page reload
+
+---
+
 ## 🚀 Next Steps
 
 The highest value next step is connecting real data — specifically the LiveTicker and any data fetching hooks in the pages. Currently everything is mock/static.
@@ -294,5 +419,5 @@ After that, implement the trading bot logic on the `/crypto` page as the core fe
 
 ---
 
-*Last updated: April 30, 2026*
+*Last updated: May 12, 2026*
 *Session count: 8*

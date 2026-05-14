@@ -42,21 +42,19 @@ function CEXDEXToggleBar() {
       <div className="flex items-center gap-2">
         <button
           onClick={() => setExchangeType("cex")}
-          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-            exchangeType === "cex"
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${exchangeType === "cex"
               ? "bg-gradient-to-r from-purple-600 to-cyan-500 text-white shadow-lg shadow-purple-500/25"
               : "bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50 border border-slate-700"
-          }`}
+            }`}
         >
           CEX
         </button>
         <button
           onClick={() => setExchangeType("dex")}
-          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-            exchangeType === "dex"
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${exchangeType === "dex"
               ? "bg-gradient-to-r from-purple-600 to-cyan-500 text-white shadow-lg shadow-purple-500/25"
               : "bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50 border border-slate-700"
-          }`}
+            }`}
         >
           DEX
         </button>

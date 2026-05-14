@@ -20,85 +20,69 @@ interface HotMarket {
   timeRemaining: number
   trending: boolean
   trendingScore: number
+  volumeRaw?: string
 }
 
 export function HotMarketsPage() {
   const [platformTab, setPlatformTab] = useState("all")
-  const [markets, setMarkets] = useState<HotMarket[]>([
-    {
-      id: "1",
-      title: "Bitcoin to $100K by end of 2026",
-      question: "Will Bitcoin reach $100,000 USD before December 31, 2026?",
-      category: "Bitcoin",
-      platform: "Polymarket",
-      yesPercent: 68,
-      noPercent: 32,
-      volume: 125000,
-      participants: 8432,
-      timeRemaining: 156,
-      trending: true,
-      trendingScore: 95,
-    },
-    {
-      id: "2",
-      title: "Ethereum ETF approval Q3 2026",
-      question: "Will the SEC approve a spot Ethereum ETF in Q3 2026?",
-      category: "Ethereum",
-      platform: "Kalshi",
-      yesPercent: 54,
-      noPercent: 46,
-      volume: 89000,
-      participants: 5621,
-      timeRemaining: 89,
-      trending: true,
-      trendingScore: 88,
-    },
-    {
-      id: "3",
-      title: "AI bubble burst by 2026",
-      question: "Will the AI sector experience a significant bubble burst in 2026?",
-      category: "AI & Tech",
-      platform: "Polymarket",
-      yesPercent: 42,
-      noPercent: 58,
-      volume: 210000,
-      participants: 12543,
-      timeRemaining: 203,
-      trending: true,
-      trendingScore: 92,
-    },
-    {
-      id: "4",
-      title: "Solana Firedancer upgrade June 2026",
-      question: "Will Solana complete its Firedancer upgrade by June 2026?",
-      category: "Solana",
-      platform: "Kalshi",
-      yesPercent: 76,
-      noPercent: 24,
-      volume: 45000,
-      participants: 3245,
-      timeRemaining: 45,
-      trending: false,
-      trendingScore: 65,
-    },
-    {
-      id: "5",
-      title: "Tesla stock to $500 by year end",
-      question: "Will Tesla (TSLA) reach $500 before December 31, 2026?",
-      category: "Stocks",
-      platform: "Polymarket",
-      yesPercent: 38,
-      noPercent: 62,
-      volume: 67000,
-      participants: 4521,
-      timeRemaining: 178,
-      trending: true,
-      trendingScore: 78,
-    },
-  ])
-
+  const [markets, setMarkets] = useState<HotMarket[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
+
+  useEffect(() => {
+    fetch("/api/prediction-markets")
+      .then((res) => res.json())
+      .then((data) => {
+        // Map database fields to component fields
+        const mapped = data.map((m: any) => {
+          // Parse volume string (e.g., "$2.3M" -> 2300000)
+          let volNum = 0
+          const volStr = m.volume || m.volumeRaw || ""
+          if (typeof volStr === "string") {
+            const match = volStr.match(/[\$]?\s*([\d.]+)\s*([KkMmBb])?/)
+            if (match) {
+              const num = parseFloat(match[1])
+              const suffix = (match[2] || "").toUpperCase()
+              if (suffix === "M") volNum = num * 1000000
+              else if (suffix === "B") volNum = num * 1000000000
+              else if (suffix === "K" || suffix === "") volNum = num * 1000
+              else volNum = num
+            }
+          } else if (typeof volStr === "number") {
+            volNum = volStr
+          }
+
+          // Convert yes_price to percentage
+          const yesPercent = Math.min(100, Math.max(0, (m.yes_price || 0) * 100))
+          const noPercent = Math.min(100, Math.max(0, (m.no_price || 0) * 100))
+
+          // Derive trending from market activity (volume > $500K or high yes_price)
+          const trending = volNum > 500000 || yesPercent > 80 || yesPercent < 20
+
+          return {
+            id: m.id,
+            title: m.title,
+            question: m.question || m.title,
+            category: m.category || "Other",
+            platform: m.platform || "polymarket",
+            yesPercent,
+            noPercent,
+            volume: volNum,
+            participants: Math.floor(Math.random() * 5000 + 1000), // placeholder - add to DB if needed
+            timeRemaining: 30, // placeholder - add close_date parsing if needed
+            trending,
+            trendingScore: Math.floor(Math.random() * 60 + 40), // placeholder
+          }
+        })
+        setMarkets(mapped)
+        setLoading(false)
+      })
+      .catch(() => {
+        setMarkets([])
+        setLoading(false)
+      })
+  }, [])
 
   const categories = ["All", "Bitcoin", "Ethereum", "AI & Tech", "Solana", "Stocks", "NFTs", "Crypto"]
 
@@ -111,21 +95,6 @@ export function HotMarketsPage() {
   })
 
   const trendingMarkets = markets.filter(m => m.trending).slice(0, 5)
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMarkets(current => current.map(m => ({
-        ...m,
-        yesPercent: Math.min(100, Math.max(0, m.yesPercent + (Math.random() - 0.5) * 2)),
-        noPercent: Math.min(100, Math.max(0, m.noPercent + (Math.random() - 0.5) * 2)),
-        volume: m.volume + Math.floor(Math.random() * 100),
-        trending: Math.random() > 0.7,
-        trendingScore: Math.floor(Math.random() * 100)
-      })))
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [])
 
   const formatVolume = (num: number) => {
     if (num >= 1000000) return `$${(num / 1000000).toFixed(1)}M`
@@ -145,7 +114,7 @@ export function HotMarketsPage() {
         {/* Platform Toggle */}
         <div className="mb-6">
           <div className="flex justify-center">
-            <Tabs defaultValue={platformTab} className="w-full max-w-2xl" onValueChange={setPlatformTab}>
+            <Tabs value={platformTab} className="w-full max-w-2xl" onValueChange={setPlatformTab}>
               <TabsList className="bg-slate-800/50 border border-slate-700">
                 <TabsTrigger value="all" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-500">
                   <span className="flex items-center gap-2">
@@ -187,7 +156,7 @@ export function HotMarketsPage() {
             className="bg-gradient-to-br from-orange-500/20 to-red-600/10 border border-orange-500/20 rounded-xl p-4"
           >
             <div className="text-slate-400 text-sm mb-1">Hot Markets</div>
-            <div className="text-2xl font-bold text-orange-400">{markets.filter(m => m.trending).length}</div>
+            <div className="text-2xl font-bold text-orange-400">{loading ? "-" : markets.filter(m => m.trending).length}</div>
           </motion.div>
 
           <motion.div
@@ -198,7 +167,7 @@ export function HotMarketsPage() {
           >
             <div className="text-slate-400 text-sm mb-1">Total Volume</div>
             <div className="text-2xl font-bold text-white">
-              ${(markets.reduce((sum, m) => sum + m.volume, 0) / 1000).toFixed(1)}K
+              {loading ? "-" : `${((markets.reduce((sum, m) => sum + m.volume, 0) / 1000)).toFixed(1)}K`}
             </div>
           </motion.div>
 
@@ -210,7 +179,7 @@ export function HotMarketsPage() {
           >
             <div className="text-slate-400 text-sm mb-1">Active Participants</div>
             <div className="text-2xl font-bold text-green-400">
-              {markets.reduce((sum, m) => sum + m.participants, 0)}
+              {loading ? "-" : markets.reduce((sum, m) => sum + m.participants, 0).toLocaleString()}
             </div>
           </motion.div>
 
@@ -222,7 +191,7 @@ export function HotMarketsPage() {
           >
             <div className="text-slate-400 text-sm mb-1">Avg Volume</div>
             <div className="text-2xl font-bold text-cyan-400">
-              ${formatVolume(Math.floor(markets.reduce((sum, m) => sum + m.volume, 0) / markets.length))}
+              {loading ? "-" : markets.length > 0 ? `$${formatVolume(Math.floor(markets.reduce((sum, m) => sum + m.volume, 0) / markets.length))}` : "-"}
             </div>
           </motion.div>
         </div>

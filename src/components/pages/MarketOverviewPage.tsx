@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { TrendingUp, TrendingDown, ArrowRight, Search, RefreshCw, Bell, Settings, Zap, CircleDollarSign } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
@@ -8,32 +8,141 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { cryptoAssets, exchanges, mockBots } from "@/data/mock"
 import { useAppContext } from "@/lib/providers"
 
-// CEX-specific market data (centralized exchanges)
-const cexMarkets = [
-  { symbol: 'BTC/USDT', exchange: 'Binance', price: 67234.50, change24h: 2.34, volume: '1.2B', type: 'spot' },
-  { symbol: 'ETH/USDT', exchange: 'Binance', price: 3456.78, change24h: -1.12, volume: '890M', type: 'spot' },
-  { symbol: 'BTC-PERP', exchange: 'Binance', price: 67250.00, change24h: 2.31, volume: '450M', type: 'futures' },
-  { symbol: 'ETH/USDT', exchange: 'Coinbase', price: 3455.20, change24h: -1.15, volume: '320M', type: 'spot' },
-  { symbol: 'SOL/USDT', exchange: 'Kraken', price: 178.92, change24h: 5.67, volume: '210M', type: 'spot' },
-]
+interface Asset {
+  id: string
+  symbol: string
+  name: string
+  price: number
+  change_24h: number
+  market_cap: string
+  volume_24h: string
+  icon: string
+  category: string
+}
 
-// DEX-specific market data (decentralized exchanges)
-const dexMarkets = [
-  { symbol: 'BTC/ETH', exchange: 'Uniswap V3', price: 19.47, change24h: 1.89, volume: '45M', type: 'spot' },
-  { symbol: 'SOL/USDC', exchange: 'Raydium', price: 178.85, change24h: 5.42, volume: '32M', type: 'spot' },
-  { symbol: 'BTC/USDC', exchange: 'Uniswap V3', price: 67230.00, change24h: 2.30, volume: '78M', type: 'spot' },
-  { symbol: 'ETH/USDC', exchange: 'Uniswap V3', price: 3455.10, change24h: -1.10, volume: '56M', type: 'spot' },
-  { symbol: 'WBTC/ETH', exchange: 'Uniswap V2', price: 19.45, change24h: 1.85, volume: '12M', type: 'spot' },
-]
+interface Market {
+  symbol: string
+  exchange: string
+  price: number
+  change24h: number
+  volume: string
+  type: string
+}
+
+interface Exchange {
+  name: string
+  supported: string[]
+  icon: string
+}
+
+// Exchange definitions derived from database connections
+function getExchanges(exchangeType: "cex" | "dex"): Exchange[] {
+  if (exchangeType === "cex") {
+    return [
+      { name: "Binance", supported: ["spot", "futures"], icon: "🔶" },
+      { name: "Coinbase", supported: ["spot", "futures"], icon: "🔵" },
+      { name: "Kraken", supported: ["spot", "futures"], icon: "🟣" },
+    ]
+  }
+  return [
+    { name: "Uniswap", supported: ["spot"], icon: "🦄" },
+    { name: "Raydium", supported: ["spot"], icon: "⚡" },
+    { name: "PancakeSwap", supported: ["spot"], icon: "🥞" },
+  ]
+}
+
+// Map database assets to market entries for the given exchange type
+function mapAssetsToMarkets(assets: Asset[], exchangeType: "cex" | "dex"): Market[] {
+  if (assets.length === 0) return []
+
+  const exchanges = exchangeType === "cex"
+    ? ["Binance", "Coinbase", "Kraken"]
+    : ["Uniswap", "Raydium", "PancakeSwap"]
+
+  const markets: Market[] = []
+  for (const asset of assets) {
+    for (const ex of exchanges) {
+      markets.push({
+        symbol: asset.symbol,
+        exchange: ex,
+        price: asset.price,
+        change24h: asset.change_24h,
+        volume: asset.volume_24h,
+        type: exchangeType === "cex" ? "spot" : "spot",
+      })
+    }
+  }
+  return markets
+}
 
 export function MarketOverviewPage() {
   const { exchangeType, setExchangeType } = useAppContext()
   const [searchTerm, setSearchTerm] = useState("")
   const [refreshInterval, setRefreshInterval] = useState(5000)
   const [lastUpdated, setLastUpdated] = useState(new Date())
+  const [assets, setAssets] = useState<Asset[]>([])
+  const [loading, setLoading] = useState(true)
+  const [exchanges, setExchanges] = useState<Exchange[]>([])
+  const [markets, setMarkets] = useState<Market[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+    const fetchAssets = async () => {
+      try {
+        const res = await fetch("/api/assets")
+        if (!res.ok) throw new Error("Failed to fetch assets")
+        const data = await res.json()
+        if (!cancelled) {
+          setAssets(data)
+          setMarkets(mapAssetsToMarkets(data, exchangeType))
+          setExchanges(getExchanges(exchangeType))
+          setLoading(false)
+          setLastUpdated(new Date())
+        }
+      } catch (error) {
+        console.error("Failed to fetch assets:", error)
+        if (!cancelled) {
+          setAssets([])
+          setMarkets([])
+          setExchanges(getExchanges(exchangeType))
+          setLoading(false)
+        }
+      }
+    }
+
+    fetchAssets()
+
+    // Refresh assets every 60 seconds to respect CoinGecko rate limits
+    const interval = setInterval(() => {
+      fetch("/api/assets")
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to fetch assets")
+          return res.json()
+        })
+        .then((data) => {
+          setAssets(data)
+          setMarkets(mapAssetsToMarkets(data, exchangeType))
+          setExchanges(getExchanges(exchangeType))
+          setLastUpdated(new Date())
+        })
+        .catch((error) => console.error("Failed to refresh assets:", error))
+    }, 60000)
+
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
+  }, [])
+
+  // Recalculate markets and exchanges when exchange type changes
+  useEffect(() => {
+    if (assets.length > 0) {
+      setMarkets(mapAssetsToMarkets(assets, exchangeType))
+      setExchanges(getExchanges(exchangeType))
+    }
+  }, [exchangeType])
 
   const marketStats = {
     totalVolume: exchangeType === "cex" ? "$84.2K" : "$12.4K",
@@ -42,8 +151,7 @@ export function MarketOverviewPage() {
     avgTradingTime: exchangeType === "cex" ? "2.3s" : "3.1s",
   }
 
-  const markets = exchangeType === "cex" ? cexMarkets : dexMarkets
-  const filteredMarkets = markets.filter(m =>
+  const filteredMarkets = markets.filter((m) =>
     m.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
     m.exchange.toLowerCase().includes(searchTerm.toLowerCase())
   )
@@ -104,53 +212,73 @@ export function MarketOverviewPage() {
             Alerts
           </Button>
         </div>
-        <div className="text-xs text-slate-400">
+        <div className="text-xs text-slate-400" suppressHydrationWarning>
           Updated: {lastUpdated.toLocaleTimeString()}
         </div>
       </div>
 
       {/* Markets list */}
       <div className="space-y-3">
-        {filteredMarkets.map((market, i) => (
-          <motion.div
-            key={`${market.symbol}-${market.exchange}`}
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: i * 0.1 }}
-          >
-            <Card className="bg-slate-900/50 backdrop-blur border-slate-700">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center">
-                      <span className="text-2xl">{exchangeType === "cex" ? "🏛" : "🔗"}</span>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-white">{market.symbol}</h3>
-                        <Badge variant="outline" className="text-xs border-slate-600 text-slate-400">
-                          {market.exchange}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs border-slate-600 text-slate-400">
-                          {market.type}
-                        </Badge>
+        {loading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <Card key={i} className="bg-slate-900/50 backdrop-blur border-slate-700">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-slate-800 animate-pulse" />
+                      <div>
+                        <div className="h-5 w-32 bg-slate-700 rounded animate-pulse mb-2" />
+                        <div className="h-4 w-48 bg-slate-800 rounded animate-pulse" />
                       </div>
-                      <div className="text-xs text-slate-400">Vol: ${market.volume} | 24h: {market.change24h}%</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="h-7 w-24 bg-slate-700 rounded animate-pulse mb-2" />
+                      <div className="h-4 w-16 bg-slate-800 rounded animate-pulse" />
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-white">
-                      {exchangeType === "cex" ? `$${market.price.toLocaleString()}` : `$${market.price.toFixed(4)}`}
+                </CardContent>
+              </Card>
+            ))
+          : filteredMarkets.map((market, i) => (
+              <motion.div
+                key={`${market.symbol}-${market.exchange}`}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: i * 0.1 }}
+              >
+                <Card className="bg-slate-900/50 backdrop-blur border-slate-700">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center">
+                          <span className="text-2xl">{exchangeType === "cex" ? "🏛" : "🔗"}</span>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-bold text-white">{market.symbol}</h3>
+                            <Badge variant="outline" className="text-xs border-slate-600 text-slate-400">
+                              {market.exchange}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs border-slate-600 text-slate-400">
+                              {market.type}
+                            </Badge>
+                          </div>
+                          <div className="text-xs text-slate-400">Vol: ${market.volume} | 24h: {market.change24h}%</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-white">
+                          {exchangeType === "cex" ? `$${market.price.toLocaleString()}` : `$${market.price.toFixed(4)}`}
+                        </div>
+                        <div className={`text-sm ${market.change24h >= 0 ? "text-green-400" : "text-red-400"}`}>
+                          {market.change24h >= 0 ? "+" : ""}{market.change24h}%
+                        </div>
+                      </div>
                     </div>
-                    <div className={`text-sm ${market.change24h >= 0 ? "text-green-400" : "text-red-400"}`}>
-                      {market.change24h >= 0 ? "+" : ""}{market.change24h}%
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
       </div>
 
       {/* Exchange Activity */}
@@ -160,7 +288,7 @@ export function MarketOverviewPage() {
           {exchangeType === "cex" ? "CEX" : "DEX"} Exchange Activity
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {(exchangeType === "cex" ? exchanges : exchanges.filter(e => e.supported.includes('spot'))).map((exchange, i) => (
+          {exchanges.map((exchange, i) => (
             <motion.div
               key={exchange.name}
               initial={{ y: 20, opacity: 0 }}
@@ -179,15 +307,15 @@ export function MarketOverviewPage() {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-slate-400">24h Volume:</span>
-                      <span className="text-white">${(Math.random() * 1000 + 50).toFixed(1)}K</span>
+                      <span className="text-white" suppressHydrationWarning>${(Math.random() * 1000 + 50).toFixed(1)}K</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Active Bots:</span>
-                      <span className="text-white">{Math.floor(Math.random() * 50) + 10}</span>
+                      <span className="text-white" suppressHydrationWarning>{Math.floor(Math.random() * 50) + 10}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Avg Trades/min:</span>
-                      <span className="text-white">{Math.floor(Math.random() * 20) + 5}</span>
+                      <span className="text-white" suppressHydrationWarning>{Math.floor(Math.random() * 20) + 5}</span>
                     </div>
                   </div>
                 </CardContent>

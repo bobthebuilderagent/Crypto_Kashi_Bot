@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { BarChart3, LineChart, PieChart, Calendar, Download, Share2, Filter, ChevronDown, Zap, CircleDollarSign } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
@@ -8,32 +8,92 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { cryptoAssets, mockBots } from "@/data/mock"
 import { useAppContext } from "@/lib/providers"
 
-// CEX-specific bot data
-const cexBots = [
-  { id: 'cex-1', name: 'BTC Grid Bot', exchange: 'Binance', type: 'spot', status: 'active', strategy: 'Grid Trading', dailyPnl: 234.56, totalPnl: 12456.78, tradeCount: 1234, winRate: 67.8, icon: '🤖', totalInvestment: 50000 },
-  { id: 'cex-2', name: 'ETH Futures Scalper', exchange: 'Coinbase Pro', type: 'futures', status: 'active', strategy: 'Scalping', dailyPnl: -45.23, totalPnl: 3456.12, tradeCount: 4567, winRate: 72.3, icon: '⚡', totalInvestment: 25000 },
-  { id: 'cex-3', name: 'SOL DCA Bot', exchange: 'Kraken', type: 'spot', status: 'paused', strategy: 'DCA', dailyPnl: 0, totalPnl: 890.45, tradeCount: 89, winRate: 61.2, icon: '☀️', totalInvestment: 10000 },
-  { id: 'cex-4', name: 'Multi-Asset Arb', exchange: 'Binance US', type: 'futures', status: 'active', strategy: 'Arbitrage', dailyPnl: 567.89, totalPnl: 45678.90, tradeCount: 8901, winRate: 58.9, icon: '🔄', totalInvestment: 100000 },
-]
+interface Bot {
+  id: string
+  name: string
+  exchange: string
+  type: string
+  status: string
+  strategy: string
+  dailyPnl: number
+  totalPnl: number
+  tradeCount: number
+  winRate: number
+  icon: string
+  totalInvestment: number
+}
 
-// DEX-specific bot data
-const dexBots = [
-  { id: 'dex-1', name: 'BTC/ETH Swap Bot', exchange: 'Uniswap V3', type: 'spot', status: 'active', strategy: 'Liquidity', dailyPnl: 189.34, totalPnl: 8901.23, tradeCount: 567, winRate: 71.2, icon: '🔗', totalInvestment: 30000 },
-  { id: 'dex-2', name: 'SOL Yield Farm', exchange: 'Raydium', type: 'spot', status: 'active', strategy: 'Yield Farming', dailyPnl: 123.45, totalPnl: 4567.89, tradeCount: 234, winRate: 68.5, icon: '🌾', totalInvestment: 15000 },
-  { id: 'dex-3', name: 'ARB Sniper', exchange: 'Uniswap V3', type: 'spot', status: 'paused', strategy: 'Sniper', dailyPnl: 0, totalPnl: -234.56, tradeCount: 45, winRate: 42.1, icon: '🎯', totalInvestment: 5000 },
-  { id: 'dex-4', name: 'MEV Bot', exchange: 'Uniswap V3', type: 'spot', status: 'active', strategy: 'MEV', dailyPnl: 345.67, totalPnl: 23456.78, tradeCount: 1234, winRate: 55.3, icon: '🔍', totalInvestment: 75000 },
-]
+interface Asset {
+  id: string
+  symbol: string
+  name: string
+  price: number
+  change24h: number
+  marketCap: string
+  volume: string
+  icon: string
+  category: string
+}
 
 export function AnalyticsPage() {
   const { exchangeType, setExchangeType } = useAppContext()
   const [timeRange, setTimeRange] = useState("7d")
   const [selectedBot, setSelectedBot] = useState<string | null>("all")
   const [timeRangeOption, setTimeRangeOption] = useState<string | null>("7d")
+  const [assets, setAssets] = useState<Asset[]>([])
+  const [bots, setBots] = useState<Bot[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const bots = exchangeType === "cex" ? cexBots : dexBots
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/assets").then((res) => res.json()),
+      fetch("/api/bots").then((res) => res.json()),
+    ])
+      .then(([rawAssets, rawBots]) => {
+        const mappedAssets = rawAssets.map((a: Record<string, unknown>) => ({
+          id: a.id,
+          symbol: a.symbol,
+          name: a.name,
+          price: a.price,
+          change24h: a.change_24h,
+          marketCap: a.market_cap,
+          volume: a.volume_24h,
+          icon: a.icon,
+          category: a.category,
+        }))
+        const mappedBots = rawBots.map((b: Record<string, unknown>) => ({
+          id: b.id,
+          name: b.name,
+          exchange: b.exchange,
+          type: b.type,
+          status: b.status,
+          strategy: b.strategy,
+          dailyPnl: b.daily_pnl,
+          totalPnl: b.total_pnl,
+          tradeCount: b.trade_count,
+          winRate: b.win_rate,
+          icon: b.icon,
+          totalInvestment: b.total_investment,
+        }))
+        setAssets(mappedAssets)
+        setBots(mappedBots)
+        setLoading(false)
+      })
+      .catch(() => {
+        setLoading(false)
+      })
+  }, [])
+
+  // Filter bots based on exchange type (CEX vs DEX)
+  const cexExchanges = ['Binance US', 'Coinbase Pro', 'Kraken', 'FTX US']
+  const dexExchanges = ['Uniswap', 'Raydium', 'PancakeSwap']
+  
+  const cexBots = bots.filter(b => cexExchanges.includes(b.exchange))
+  const dexBots = bots.filter(b => dexExchanges.includes(b.exchange))
+  
+  const botsList = exchangeType === "cex" ? cexBots : dexBots
 
   const timeRanges = [
     { label: "24h", value: "24h" },
@@ -43,12 +103,12 @@ export function AnalyticsPage() {
   ]
 
   const analytics = {
-    totalTrades: bots.reduce((sum, b) => sum + b.tradeCount, 0),
-    winRate: bots.reduce((sum, b) => sum + b.winRate, 0) / bots.length,
+    totalTrades: botsList.reduce((sum, b) => sum + b.tradeCount, 0),
+    winRate: botsList.length > 0 ? botsList.reduce((sum, b) => sum + b.winRate, 0) / botsList.length : 0,
     avgTradeValue: "$3,247",
-    totalProfit: `$${bots.reduce((sum, b) => sum + b.totalPnl, 0).toLocaleString()}`,
-    bestPerforming: bots.sort((a, b) => b.totalPnl - a.totalPnl)[0]?.name || "N/A",
-    worstPerforming: bots.sort((a, b) => b.totalPnl - a.totalPnl)[bots.length - 1]?.name || "N/A",
+    totalProfit: `$${botsList.reduce((sum, b) => sum + b.totalPnl, 0).toLocaleString()}`,
+    bestPerforming: botsList.sort((a, b) => b.totalPnl - a.totalPnl)[0]?.name || "N/A",
+    worstPerforming: botsList.length > 1 ? botsList.sort((a, b) => b.totalPnl - a.totalPnl)[botsList.length - 1]?.name || "N/A" : "N/A",
   }
 
   return (
@@ -127,7 +187,7 @@ export function AnalyticsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Bots</SelectItem>
-                {bots.map(bot => (
+                {botsList.map(bot => (
                   <SelectItem key={bot.id} value={bot.id}>{bot.name}</SelectItem>
                 ))}
               </SelectContent>
@@ -156,7 +216,7 @@ export function AnalyticsPage() {
               Performance Overview
             </h3>
             <div className="space-y-4">
-              {bots.slice(0, 4).map((bot, i) => (
+              {botsList.slice(0, 4).map((bot, i) => (
                 <div key={bot.id} className="p-3 rounded-lg bg-slate-800/50">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -197,7 +257,7 @@ export function AnalyticsPage() {
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
             </h3>
             <div className="space-y-3">
-              {cryptoAssets.slice(0, 5).map((asset, i) => (
+              {assets.slice(0, 5).map((asset, i) => (
                 <div key={asset.symbol} className="p-3 rounded-lg bg-slate-800/50">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -241,7 +301,7 @@ export function AnalyticsPage() {
                 </tr>
               </thead>
               <tbody>
-                {[...bots].sort((a, b) => b.totalPnl - a.totalPnl).slice(0, 5).map((bot, i) => (
+                {[...botsList].sort((a, b) => b.totalPnl - a.totalPnl).slice(0, 5).map((bot, i) => (
                   <tr key={bot.id} className="border-b border-slate-800 hover:bg-slate-800/50">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">

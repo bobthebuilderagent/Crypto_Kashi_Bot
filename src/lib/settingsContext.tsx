@@ -83,6 +83,19 @@ export const DEFAULT_PREDICTION_PLATFORMS: PredictionConnection[] = [
   { id: 'polymarket', platform: 'polymarket', apiKey: '', connected: false },
 ]
 
+// ─── Favorites Types ─────────────────────────────────
+export interface CryptoFavorite {
+  symbol: string
+  name: string
+  icon: string
+}
+
+export interface PredictionFavorite {
+  id: string
+  title: string
+  platform: string
+}
+
 // ─── Context ───────────────────────────────────────────
 interface SettingsContextType {
   // CEX
@@ -107,6 +120,12 @@ interface SettingsContextType {
   removePredictionPlatform: (id: string) => void
   updatePredictionField: (id: string, field: 'apiKey' | 'token' | 'walletAddress', value: string) => void
   testPredictionConnection: (id: string) => Promise<boolean>
+
+  // Favorites
+  cryptoFavorites: CryptoFavorite[]
+  toggleCryptoFavorite: (fav: CryptoFavorite) => void
+  predictionFavorites: PredictionFavorite[]
+  togglePredictionFavorite: (fav: PredictionFavorite) => void
 }
 
 export const SettingsContext = createContext<SettingsContextType | undefined>(undefined)
@@ -116,6 +135,8 @@ const STORAGE_KEYS = {
   CEX: 'crypto_kalshi_bot_cex_connections',
   DEX: 'crypto_kalshi_bot_dex_connections',
   PREDICTION: 'crypto_kalshi_bot_prediction_platforms',
+  CRYPTO_FAV: 'crypto_kalshi_bot_crypto_favorites',
+  PRED_FAV: 'crypto_kalshi_bot_prediction_favorites',
 }
 
 function loadFromStorage<T>(key: string, defaultValue: T): T {
@@ -152,6 +173,16 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     () => loadFromStorage<PredictionConnection[]>(STORAGE_KEYS.PREDICTION, DEFAULT_PREDICTION_PLATFORMS)
   )
 
+  // Crypto favorites - persist to localStorage
+  const [cryptoFavorites, setCryptoFavorites] = useState<CryptoFavorite[]>(
+    () => loadFromStorage<CryptoFavorite[]>(STORAGE_KEYS.CRYPTO_FAV, [])
+  )
+
+  // Prediction favorites - persist to localStorage
+  const [predictionFavorites, setPredictionFavorites] = useState<PredictionFavorite[]>(
+    () => loadFromStorage<PredictionFavorite[]>(STORAGE_KEYS.PRED_FAV, [])
+  )
+
   // Persist CEX connections to localStorage
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.CEX, cexConnections)
@@ -166,6 +197,16 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.PREDICTION, predictionPlatforms)
   }, [predictionPlatforms])
+
+  // Persist crypto favorites to localStorage
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.CRYPTO_FAV, cryptoFavorites)
+  }, [cryptoFavorites])
+
+  // Persist prediction favorites to localStorage
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.PRED_FAV, predictionFavorites)
+  }, [predictionFavorites])
 
   const addCexConnection = useCallback((conn: Omit<CEXConnection, 'apiKey' | 'apiSecret' | 'apiKeyId' | 'connected'>) => {
     setCexConnections(prev => [...prev, { ...conn, apiKey: '', apiSecret: '', apiKeyId: undefined, connected: false }])
@@ -205,6 +246,27 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setPredictionPlatforms(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p))
   }, [])
 
+  // Favorites
+  const toggleCryptoFavorite = useCallback((fav: CryptoFavorite) => {
+    setCryptoFavorites(prev => {
+      const exists = prev.find(f => f.symbol === fav.symbol)
+      if (exists) {
+        return prev.filter(f => f.symbol !== fav.symbol)
+      }
+      return [...prev, fav]
+    })
+  }, [])
+
+  const togglePredictionFavorite = useCallback((fav: PredictionFavorite) => {
+    setPredictionFavorites(prev => {
+      const exists = prev.find(f => f.id === fav.id)
+      if (exists) {
+        return prev.filter(f => f.id !== fav.id)
+      }
+      return [...prev, fav]
+    })
+  }, [])
+
   // Mock connection test
   const testCexConnection = useCallback(async (_id: string): Promise<boolean> => {
     return new Promise<boolean>((resolve) => {
@@ -237,7 +299,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       addPredictionPlatform,
       removePredictionPlatform,
       updatePredictionField,
-      testPredictionConnection
+      testPredictionConnection,
+      // Favorites
+      cryptoFavorites,
+      toggleCryptoFavorite,
+      predictionFavorites,
+      togglePredictionFavorite,
     }}>
       {children}
     </SettingsContext.Provider>

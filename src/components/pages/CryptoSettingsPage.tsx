@@ -48,179 +48,132 @@ function SettingsSidebar({ tabs, selectedTab, onSelect }: { tabs: Array<{ id: st
   )
 }
 
-// CEX Settings Panel
+// CEX Settings Panel (General Tab)
+// Note: API Keys are handled in the separate API Keys tab — this panel covers
+// bot-level general settings for CEX trading.
 function CEXSettingsPanel() {
-  const [selectedExchange, setSelectedExchange] = useState("binance")
-
-  const exchanges = [
-    { id: "binance", name: "Binance", icon: "🔶", status: "connected" },
-    { id: "coinbase", name: "Coinbase", icon: "🔵", status: "not_connected" },
-    { id: "kraken", name: "Kraken", icon: "🟣", status: "not_connected" },
-    { id: "ftx", name: "FTX", icon: "🟡", status: "not_connected" },
-  ]
-
   return (
     <div className="space-y-5 max-w-2xl">
-      {/* Exchange Selection */}
+      {/* Bot Profile */}
       <Card className="bg-slate-900/50 border-slate-700/50">
         <CardContent className="p-5">
           <h3 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
-            <Key className="w-4 h-4 text-amber-400" />
-            Exchange Connections
+            <SettingsIcon className="w-4 h-4 text-cyan-400" />
+            Bot Profile
           </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            {exchanges.map((ex) => (
-              <button
-                key={ex.id}
-                onClick={() => setSelectedExchange(ex.id)}
-                className={`p-3 rounded-lg border transition-all text-left ${selectedExchange === ex.id
-                    ? "bg-slate-800 border-cyan-500/50 text-white"
-                    : "bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
-                  }`}
-              >
-                <div className="text-lg mb-1">{ex.icon}</div>
-                <div className="text-sm font-medium">{ex.name}</div>
-                <div className="text-xs mt-1">
-                  {ex.status === "connected" ? (
-                    <span className="text-green-400">Connected</span>
-                  ) : (
-                    <span className="text-slate-500">Not Connected</span>
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {/* Selected Exchange Settings */}
-          {selectedExchange === "binance" && (
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-slate-300">Binance Configuration</h4>
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">API Key</Label>
-                  <Input
-                    defaultValue="your-api-key-here"
-                    className="bg-slate-800 border-slate-700 text-white font-mono"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">API Secret</Label>
-                  <Input
-                    defaultValue="your-api-secret-here"
-                    className="bg-slate-800 border-slate-700 text-white font-mono"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">API Password</Label>
-                  <Input
-                    defaultValue="••••••••••"
-                    className="bg-slate-800 border-slate-700 text-white font-mono"
-                  />
-                </div>
-              </div>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm text-slate-400 mb-1 block">Bot Name</Label>
+              <Input defaultValue="My Trading Bot" className="bg-slate-800 border-slate-700 text-white" />
             </div>
-          )}
-
-          {selectedExchange === "coinbase" && (
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-slate-300">Coinbase Configuration</h4>
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">API Key</Label>
-                  <Input
-                    placeholder="Enter your Coinbase API key"
-                    className="bg-slate-800 border-slate-700 text-white font-mono"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">API Secret</Label>
-                  <Input
-                    placeholder="Enter your Coinbase API secret"
-                    className="bg-slate-800 border-slate-700 text-white font-mono"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">Passphrase</Label>
-                  <Input
-                    placeholder="Enter your passphrase"
-                    className="bg-slate-800 border-slate-700 text-white font-mono"
-                  />
-                </div>
-              </div>
+            <div>
+              <Label className="text-sm text-slate-400 mb-1 block">Description</Label>
+              <Input placeholder="Describe your trading bot" className="bg-slate-800 border-slate-700 text-white" />
             </div>
-          )}
-
-          {selectedExchange === "kraken" && (
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-slate-300">Kraken Configuration</h4>
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">API Key</Label>
-                  <Input
-                    placeholder="Enter your Kraken API key"
-                    className="bg-slate-800 border-slate-700 text-white font-mono"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">Private Key</Label>
-                  <Input
-                    placeholder="Enter your Kraken private key"
-                    className="bg-slate-800 border-slate-700 text-white font-mono"
-                  />
-                </div>
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-800/50">
+              <div>
+                <div className="font-medium text-white text-sm">Bot Status</div>
+                <div className="text-xs text-slate-400">Active / Paused / Stopped</div>
               </div>
-            </div>
-          )}
-
-          {selectedExchange === "ftx" && (
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-slate-300">FTX Configuration</h4>
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">API Key</Label>
-                  <Input
-                    placeholder="Enter your FTX API key"
-                    className="bg-slate-800 border-slate-700 text-white font-mono"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">Secret</Label>
-                  <Input
-                    placeholder="Enter your FTX secret"
-                    className="bg-slate-800 border-slate-700 text-white font-mono"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Exchange Permissions */}
-          <div className="mt-6 pt-4 border-t border-slate-700/50">
-            <h4 className="text-sm font-semibold text-slate-300 mb-3">Exchange Permissions</h4>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50">
-                <span className="text-sm text-slate-300">Read</span>
-                <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50">
-                <span className="text-sm text-slate-300">Trade</span>
-                <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50">
-                <span className="text-sm text-slate-300">Withdraw</span>
-                <Switch className="data-[state=checked]:bg-red-600" />
-              </div>
+              <Badge className="bg-green-500/20 text-green-400 border-0 text-xs">Active</Badge>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* CEX Trading Settings */}
+      {/* Display Preferences */}
+      <Card className="bg-slate-900/50 border-slate-700/50">
+        <CardContent className="p-5">
+          <h3 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
+            <Globe className="w-4 h-4 text-amber-400" />
+            Display Preferences
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm text-slate-400 mb-1 block">Display Currency</Label>
+              <Select defaultValue="USD">
+                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USD">USD ($)</SelectItem>
+                  <SelectItem value="EUR">EUR (€)</SelectItem>
+                  <SelectItem value="GBP">GBP (£)</SelectItem>
+                  <SelectItem value="BTC">BTC</SelectItem>
+                  <SelectItem value="USDT">USDT</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-sm text-slate-400 mb-1 block">Timezone</Label>
+              <Select defaultValue="UTC">
+                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="UTC">UTC</SelectItem>
+                  <SelectItem value="EST">Eastern Time (EST)</SelectItem>
+                  <SelectItem value="PST">Pacific Time (PST)</SelectItem>
+                  <SelectItem value="CET">Central European (CET)</SelectItem>
+                  <SelectItem value="JST">Japan Standard (JST)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-800/50">
+              <div>
+                <div className="font-medium text-white text-sm">Performance Tracking</div>
+                <div className="text-xs text-slate-400">Track P&L and performance metrics</div>
+              </div>
+              <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Trading Mode */}
       <Card className="bg-slate-900/50 border-slate-700/50">
         <CardContent className="p-5">
           <h3 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
             <Zap className="w-4 h-4 text-cyan-400" />
-            Trading Preferences
+            Trading Mode
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm text-slate-400 mb-1 block">Trading Mode</Label>
+              <Select defaultValue="live">
+                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="paper">Paper Trading (Simulated)</SelectItem>
+                  <SelectItem value="live">Live Trading</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-800/50">
+              <div>
+                <div className="font-medium text-white text-sm">Auto-Trading</div>
+                <div className="text-xs text-slate-400">Automatically execute trades based on signals</div>
+              </div>
+              <Switch className="data-[state=checked]:bg-green-600" />
+            </div>
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-800/50">
+              <div>
+                <div className="font-medium text-white text-sm">DCA (Dollar Cost Averaging)</div>
+                <div className="text-xs text-slate-400">Enable dollar cost averaging for entries</div>
+              </div>
+              <Switch className="data-[state=checked]:bg-green-600" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Default Trading Settings */}
+      <Card className="bg-slate-900/50 border-slate-700/50">
+        <CardContent className="p-5">
+          <h3 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
+            <SettingsIcon className="w-4 h-4 text-purple-400" />
+            Default Trading Settings
           </h3>
           <div className="space-y-4">
             <div>
@@ -248,37 +201,55 @@ function CEXSettingsPanel() {
                   <SelectItem value="5">5x</SelectItem>
                   <SelectItem value="10">10x</SelectItem>
                   <SelectItem value="20">20x</SelectItem>
+                  <SelectItem value="50">50x</SelectItem>
+                  <SelectItem value="100">100x</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-sm text-slate-400 mb-1 block">Slippage Tolerance (%)</Label>
+              <Label className="text-sm text-slate-400 mb-1 block">Default Slippage Tolerance (%)</Label>
               <Input defaultValue="1" className="bg-slate-800 border-slate-700 text-white" />
+            </div>
+            <div>
+              <Label className="text-sm text-slate-400 mb-1 block">Default Fee Tier</Label>
+              <Select defaultValue="maker">
+                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="maker">Maker</SelectItem>
+                  <SelectItem value="taker">Taker</SelectItem>
+                  <SelectItem value="custom">Custom</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* CEX Risk Management */}
+      {/* Default Trading Pairs */}
       <Card className="bg-slate-900/50 border-slate-700/50">
         <CardContent className="p-5">
           <h3 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-green-400" />
-            Risk Management
+            <Activity className="w-4 h-4 text-green-400" />
+            Default Trading Pairs
           </h3>
-          <div className="space-y-4">
-            <div>
-              <Label className="text-sm text-slate-400 mb-1 block">Max Position Size ($)</Label>
-              <Input defaultValue="10000" className="bg-slate-800 border-slate-700 text-white" />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-800/50">
+              <div className="text-sm text-white font-mono">BTC/USDT</div>
+              <Badge className="bg-green-500/20 text-green-400 border-0 text-xs">Active</Badge>
             </div>
-            <div>
-              <Label className="text-sm text-slate-400 mb-1 block">Daily Loss Limit ($)</Label>
-              <Input defaultValue="500" className="bg-slate-800 border-slate-700 text-white" />
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-800/50">
+              <div className="text-sm text-white font-mono">ETH/USDT</div>
+              <Badge className="bg-green-500/20 text-green-400 border-0 text-xs">Active</Badge>
             </div>
-            <div>
-              <Label className="text-sm text-slate-400 mb-1 block">Max Open Positions</Label>
-              <Input defaultValue="5" className="bg-slate-800 border-slate-700 text-white" />
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-800/50">
+              <div className="text-sm text-white font-mono">SOL/USDT</div>
+              <Badge className="bg-green-500/20 text-green-400 border-0 text-xs">Active</Badge>
             </div>
+            <Button variant="outline" size="sm" className="border-cyan-500/50 text-cyan-400 mt-2">
+              + Add Trading Pair
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -286,25 +257,45 @@ function CEXSettingsPanel() {
   )
 }
 
-// DEX Settings Panel
+// DEX Settings Panel (General Tab)
+// Note: API Keys are handled in the separate API Keys tab — this panel covers
+// bot-level general settings for DEX trading.
 function DEXSettingsPanel() {
-  const [selectedProtocol, setSelectedProtocol] = useState("uniswap")
-
-  const protocols = [
-    { id: "uniswap", name: "Uniswap", icon: "🦄", chain: "Ethereum" },
-    { id: "raydium", name: "Raydium", icon: "⚡", chain: "Solana" },
-    { id: "pancakeswap", name: "PancakeSwap", icon: "🥞", chain: "BNB Chain" },
-    { id: "aave", name: "Aave", icon: "💰", chain: "Multi-chain" },
-  ]
-
   return (
     <div className="space-y-5 max-w-2xl">
+      {/* Bot Profile */}
+      <Card className="bg-slate-900/50 border-slate-700/50">
+        <CardContent className="p-5">
+          <h3 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
+            <SettingsIcon className="w-4 h-4 text-cyan-400" />
+            Bot Profile
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm text-slate-400 mb-1 block">Bot Name</Label>
+              <Input defaultValue="My DEX Bot" className="bg-slate-800 border-slate-700 text-white" />
+            </div>
+            <div>
+              <Label className="text-sm text-slate-400 mb-1 block">Description</Label>
+              <Input placeholder="Describe your DEX trading bot" className="bg-slate-800 border-slate-700 text-white" />
+            </div>
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-800/50">
+              <div>
+                <div className="font-medium text-white text-sm">Bot Status</div>
+                <div className="text-xs text-slate-400">Active / Paused / Stopped</div>
+              </div>
+              <Badge className="bg-green-500/20 text-green-400 border-0 text-xs">Active</Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Wallet Connection */}
       <Card className="bg-slate-900/50 border-slate-700/50">
         <CardContent className="p-5">
           <h3 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
             <Wallet className="w-4 h-4 text-green-400" />
-            Connected Wallets
+            Connected Wallet
           </h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-800/50">
@@ -331,181 +322,147 @@ function DEXSettingsPanel() {
         </CardContent>
       </Card>
 
-      {/* Protocol Selection */}
+      {/* Network & Gas Settings */}
+      <Card className="bg-slate-900/50 border-slate-700/50">
+        <CardContent className="p-5">
+          <h3 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
+            <Globe className="w-4 h-4 text-amber-400" />
+            Network & Gas Settings
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm text-slate-400 mb-1 block">Primary Network</Label>
+              <Select defaultValue="ethereum">
+                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ethereum">Ethereum Mainnet</SelectItem>
+                  <SelectItem value="arbitrum">Arbitrum</SelectItem>
+                  <SelectItem value="polygon">Polygon</SelectItem>
+                  <SelectItem value="optimism">Optimism</SelectItem>
+                  <SelectItem value="base">Base</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-sm text-slate-400 mb-1 block">Default Gas Price (Gwei)</Label>
+              <Input defaultValue="30" className="bg-slate-800 border-slate-700 text-white" />
+            </div>
+            <div>
+              <Label className="text-sm text-slate-400 mb-1 block">Max Gas Price (Gwei)</Label>
+              <Input defaultValue="100" className="bg-slate-800 border-slate-700 text-white" />
+            </div>
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-800/50">
+              <div>
+                <div className="font-medium text-white text-sm">Auto Gas Price</div>
+                <div className="text-xs text-slate-400">Automatically adjust gas based on network congestion</div>
+              </div>
+              <Switch defaultChecked className="data-[state=checked]:bg-green-600" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Trading Mode */}
       <Card className="bg-slate-900/50 border-slate-700/50">
         <CardContent className="p-5">
           <h3 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
             <Zap className="w-4 h-4 text-cyan-400" />
-            DEX Protocols
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            {protocols.map((proto) => (
-              <button
-                key={proto.id}
-                onClick={() => setSelectedProtocol(proto.id)}
-                className={`p-3 rounded-lg border transition-all text-center ${selectedProtocol === proto.id
-                    ? "bg-slate-800 border-cyan-500/50 text-white"
-                    : "bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
-                  }`}
-              >
-                <div className="text-lg mb-1">{proto.icon}</div>
-                <div className="text-sm font-medium">{proto.name}</div>
-                <div className="text-xs mt-1 text-slate-500">{proto.chain}</div>
-              </button>
-            ))}
-          </div>
-
-          {/* Selected Protocol Settings */}
-          {selectedProtocol === "uniswap" && (
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-slate-300">Uniswap V3 Configuration</h4>
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">Network</Label>
-                  <Select defaultValue="ethereum">
-                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ethereum">Ethereum Mainnet</SelectItem>
-                      <SelectItem value="arbitrum">Arbitrum</SelectItem>
-                      <SelectItem value="polygon">Polygon</SelectItem>
-                      <SelectItem value="optimism">Optimism</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">Slippage Tolerance (%)</Label>
-                  <Input defaultValue="0.5" className="bg-slate-800 border-slate-700 text-white" />
-                </div>
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">Max Slippage (%)</Label>
-                  <Input defaultValue="5" className="bg-slate-800 border-slate-700 text-white" />
-                </div>
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">Gas Limit Multiplier</Label>
-                  <Input defaultValue="1.2" className="bg-slate-800 border-slate-700 text-white" />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {selectedProtocol === "raydium" && (
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-slate-300">Raydium Configuration</h4>
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">RPC Endpoint</Label>
-                  <Input
-                    defaultValue="https://api.mainnet.solana.com"
-                    className="bg-slate-800 border-slate-700 text-white font-mono"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">Priority Fee (SOL)</Label>
-                  <Input defaultValue="0.001" className="bg-slate-800 border-slate-700 text-white" />
-                </div>
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">Slippage (%)</Label>
-                  <Input defaultValue="1" className="bg-slate-800 border-slate-700 text-white" />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {selectedProtocol === "pancakeswap" && (
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-slate-300">PancakeSwap Configuration</h4>
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">RPC Endpoint</Label>
-                  <Input
-                    defaultValue="https://bsc-dataseed.binance.com"
-                    className="bg-slate-800 border-slate-700 text-white font-mono"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">Slippage (%)</Label>
-                  <Input defaultValue="0.5" className="bg-slate-800 border-slate-700 text-white" />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {selectedProtocol === "aave" && (
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold text-slate-300">Aave Configuration</h4>
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">Network</Label>
-                  <Select defaultValue="ethereum">
-                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ethereum">Ethereum</SelectItem>
-                      <SelectItem value="polygon">Polygon</SelectItem>
-                      <SelectItem value="arbitrum">Arbitrum</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-sm text-slate-400 mb-1 block">Max Deposit Amount</Label>
-                  <Input placeholder="Enter max deposit amount" className="bg-slate-800 border-slate-700 text-white" />
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* DEX Liquidity Settings */}
-      <Card className="bg-slate-900/50 border-slate-700/50">
-        <CardContent className="p-5">
-          <h3 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
-            <Activity className="w-4 h-4 text-purple-400" />
-            Liquidity Pool Settings
+            Trading Mode
           </h3>
           <div className="space-y-4">
             <div>
-              <Label className="text-sm text-slate-400 mb-1 block">Auto-Liquidity</Label>
-              <div className="text-sm text-slate-400 mb-2">Automatically add liquidity to new pools</div>
-              <Switch className="data-[state=checked]:bg-purple-600" />
+              <Label className="text-sm text-slate-400 mb-1 block">Trading Mode</Label>
+              <Select defaultValue="live">
+                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="paper">Paper Trading (Simulated)</SelectItem>
+                  <SelectItem value="live">Live Trading</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div>
-              <Label className="text-sm text-slate-400 mb-1 block">Min Liquidity Threshold</Label>
-              <Input defaultValue="100" className="bg-slate-800 border-slate-700 text-white" />
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-800/50">
+              <div>
+                <div className="font-medium text-white text-sm">Auto-Trading</div>
+                <div className="text-xs text-slate-400">Automatically execute swaps based on signals</div>
+              </div>
+              <Switch className="data-[state=checked]:bg-green-600" />
             </div>
-            <div>
-              <Label className="text-sm text-slate-400 mb-1 block">Max Liquidity Threshold</Label>
-              <Input defaultValue="10000" className="bg-slate-800 border-slate-700 text-white" />
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-800/50">
+              <div>
+                <div className="font-medium text-white text-sm">DCA (Dollar Cost Averaging)</div>
+                <div className="text-xs text-slate-400">Enable dollar cost averaging for entries</div>
+              </div>
+              <Switch className="data-[state=checked]:bg-green-600" />
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* DEX Token Approvals */}
+      {/* Default DEX Settings */}
       <Card className="bg-slate-900/50 border-slate-700/50">
         <CardContent className="p-5">
           <h3 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-amber-400" />
-            Token Approvals
+            <SettingsIcon className="w-4 h-4 text-purple-400" />
+            Default DEX Settings
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm text-slate-400 mb-1 block">Default DEX Protocol</Label>
+              <Select defaultValue="uniswap">
+                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="uniswap">Uniswap V3</SelectItem>
+                  <SelectItem value="raydium">Raydium</SelectItem>
+                  <SelectItem value="pancakeswap">PancakeSwap</SelectItem>
+                  <SelectItem value="aave">Aave</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-sm text-slate-400 mb-1 block">Default Slippage Tolerance (%)</Label>
+              <Input defaultValue="0.5" className="bg-slate-800 border-slate-700 text-white" />
+            </div>
+            <div>
+              <Label className="text-sm text-slate-400 mb-1 block">Max Slippage Tolerance (%)</Label>
+              <Input defaultValue="5" className="bg-slate-800 border-slate-700 text-white" />
+            </div>
+            <div>
+              <Label className="text-sm text-slate-400 mb-1 block">Transaction Timeout (seconds)</Label>
+              <Input defaultValue="120" className="bg-slate-800 border-slate-700 text-white" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Default Trading Tokens */}
+      <Card className="bg-slate-900/50 border-slate-700/50">
+        <CardContent className="p-5">
+          <h3 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
+            <Activity className="w-4 h-4 text-green-400" />
+            Default Trading Tokens
           </h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-800/50">
-              <div className="text-sm text-white">USDC</div>
-              <Badge className="bg-green-500/20 text-green-400 border-0 text-xs">Approved</Badge>
+              <div className="text-sm text-white font-mono">WETH</div>
+              <Badge className="bg-green-500/20 text-green-400 border-0 text-xs">Active</Badge>
             </div>
             <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-800/50">
-              <div className="text-sm text-white">WETH</div>
-              <Badge className="bg-green-500/20 text-green-400 border-0 text-xs">Approved</Badge>
+              <div className="text-sm text-white font-mono">USDC</div>
+              <Badge className="bg-green-500/20 text-green-400 border-0 text-xs">Active</Badge>
             </div>
             <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-slate-800/50">
-              <div className="text-sm text-white">DAI</div>
-              <Button variant="outline" size="sm" className="border-amber-500/50 text-amber-400 text-xs">
-                Approve
-              </Button>
+              <div className="text-sm text-white font-mono">WBTC</div>
+              <Badge className="bg-green-500/20 text-green-400 border-0 text-xs">Active</Badge>
             </div>
+            <Button variant="outline" size="sm" className="border-cyan-500/50 text-cyan-400 mt-2">
+              + Add Trading Token
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -514,7 +471,7 @@ function DEXSettingsPanel() {
 }
 
 // Settings page content component — each category has its own toggle behavior
-function SettingsPageContent({ selectedCategory, platform, setPlatform }: { selectedCategory: string; platform: "cex" | "dex"; setPlatform: (p: "cex" | "dex") => void }) {
+function SettingsPageContent({ selectedCategory, platform }: { selectedCategory: string; platform: "cex" | "dex" }) {
   return (
     <motion.div
       key={selectedCategory}
@@ -525,11 +482,6 @@ function SettingsPageContent({ selectedCategory, platform, setPlatform }: { sele
     >
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <Badge variant="outline" className={platform === "cex" ? "border-cyan-500/50 text-cyan-400" : "border-purple-500/50 text-purple-400"}>
-            {platform === "cex" ? "CEX" : "DEX"}
-          </Badge>
-        </div>
         <h1 className="text-2xl font-bold text-white mb-1">
           {categories.find((c) => c.id === selectedCategory)?.name}
         </h1>
@@ -774,7 +726,7 @@ export function CryptoSettingsPage() {
   return (
     <div className="flex h-full">
       <SettingsSidebar tabs={categories} selectedTab={selectedTab} onSelect={setSelectedTab} />
-      <SettingsPageContent selectedCategory={selectedTab} platform={exchangeType} setPlatform={setExchangeType} />
+      <SettingsPageContent selectedCategory={selectedTab} platform={exchangeType} />
     </div>
   )
 }
