@@ -57,6 +57,9 @@ db.exec(`
     connected       INTEGER NOT NULL DEFAULT 0,
     wallet_address  TEXT NOT NULL DEFAULT '',
     rpc_url         TEXT NOT NULL DEFAULT '',
+    rpc_api_key     TEXT NOT NULL DEFAULT '',
+    dex_url         TEXT NOT NULL DEFAULT '',
+    contract_address TEXT NOT NULL DEFAULT '',
     chain_id        INTEGER,
     created_at      TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at      TEXT NOT NULL DEFAULT (datetime('now'))

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Wallet, CheckCircle, AlertCircle, ArrowRight, ChevronDown } from "lucide-react"
+import { Wallet, CheckCircle, AlertCircle, ArrowRight, ChevronDown, Save } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -18,12 +18,11 @@ interface DEXExchange {
   name: string
   icon: string
   network: string
-  apiKey: string
-  apiSecret?: string
-  passphrase?: string
-  contractAddress?: string
+  walletAddress: string       // The wallet address used to connect to the DEX
   rpcUrl: string
-  dexUrl: string
+  rpcApiKey: string           // API key for the RPC provider (Helius, Alchemy, etc.)
+  dexUrl: string              // DEX endpoint URL
+  contractAddress?: string    // Contract address for Uniswap V3/V2 etc.
   enabled: boolean
   fields: string[]
 }
@@ -37,6 +36,9 @@ interface DexConnection {
   connected: number
   wallet_address: string
   rpc_url: string
+  rpc_api_key: string
+  dex_url: string
+  contract_address: string
   chain_id: number | null
 }
 
@@ -54,33 +56,33 @@ const NETWORKS = [
 // Exchanges grouped by network
 const NETWORK_EXCHANGES: Record<string, { name: string; icon: string; fields: string[] }[]> = {
   SOL: [
-    { name: "Jupiter",       icon: "🪙", fields: ["rpc_url", "dex_url"] },
-    { name: "Raydium",      icon: "⚡", fields: ["rpc_url", "dex_url"] },
-    { name: "Orca",         icon: "🐋", fields: ["rpc_url", "dex_url"] },
+    { name: "Jupiter",       icon: "🪙", fields: ["wallet_address", "rpc_url", "rpc_api_key", "dex_url"] },
+    { name: "Raydium",      icon: "⚡", fields: ["wallet_address", "rpc_url", "rpc_api_key", "dex_url"] },
+    { name: "Orca",         icon: "🐋", fields: ["wallet_address", "rpc_url", "rpc_api_key", "dex_url"] },
   ],
   ETH: [
-    { name: "Uniswap V3",   icon: "🦄", fields: ["rpc_url", "contract_address", "dex_url"] },
-    { name: "Uniswap V2",   icon: "🦄", fields: ["rpc_url", "contract_address", "dex_url"] },
-    { name: "SushiSwap",    icon: "🍣", fields: ["rpc_url", "dex_url"] },
-    { name: "Curve",        icon: "〰️", fields: ["rpc_url", "dex_url"] },
-    { name: "1inch",        icon: "🔵", fields: ["rpc_url", "dex_url"] },
+    { name: "Uniswap V3",   icon: "🦄", fields: ["wallet_address", "rpc_url", "rpc_api_key", "contract_address", "dex_url"] },
+    { name: "Uniswap V2",   icon: "🦄", fields: ["wallet_address", "rpc_url", "rpc_api_key", "contract_address", "dex_url"] },
+    { name: "SushiSwap",    icon: "🍣", fields: ["wallet_address", "rpc_url", "rpc_api_key", "dex_url"] },
+    { name: "Curve",        icon: "〰️", fields: ["wallet_address", "rpc_url", "rpc_api_key", "dex_url"] },
+    { name: "1inch",        icon: "🔵", fields: ["wallet_address", "rpc_url", "rpc_api_key", "dex_url"] },
   ],
   BTC: [
-    { name: "Binance",      icon: "🟡", fields: ["rpc_url", "dex_url"] },
-    { name: "Coinbase",     icon: "🔵", fields: ["rpc_url", "passphrase", "dex_url"] },
-    { name: "Kraken",      icon: "🟣", fields: ["rpc_url", "dex_url"] },
+    { name: "Binance",      icon: "🟡", fields: ["wallet_address", "rpc_url", "rpc_api_key", "dex_url"] },
+    { name: "Coinbase",     icon: "🔵", fields: ["wallet_address", "rpc_url", "rpc_api_key", "dex_url"] },
+    { name: "Kraken",       icon: "🟣", fields: ["wallet_address", "rpc_url", "rpc_api_key", "dex_url"] },
   ],
   ARB: [
-    { name: "Uniswap V3",   icon: "🦄", fields: ["rpc_url", "contract_address", "dex_url"] },
-    { name: "Camelot",     icon: "🐫", fields: ["rpc_url", "dex_url"] },
+    { name: "Uniswap V3",   icon: "🦄", fields: ["wallet_address", "rpc_url", "rpc_api_key", "contract_address", "dex_url"] },
+    { name: "Camelot",      icon: "🐫", fields: ["wallet_address", "rpc_url", "rpc_api_key", "dex_url"] },
   ],
   POL: [
-    { name: "Uniswap V3",   icon: "🦄", fields: ["rpc_url", "contract_address", "dex_url"] },
-    { name: "QuickSwap",   icon: "⚡", fields: ["rpc_url", "dex_url"] },
+    { name: "Uniswap V3",   icon: "🦄", fields: ["wallet_address", "rpc_url", "rpc_api_key", "contract_address", "dex_url"] },
+    { name: "QuickSwap",    icon: "⚡", fields: ["wallet_address", "rpc_url", "rpc_api_key", "dex_url"] },
   ],
   AVAX: [
-    { name: "Trader",      icon: "🎯", fields: ["rpc_url", "dex_url"] },
-    { name: "Pangolin",    icon: "🐸", fields: ["rpc_url", "dex_url"] },
+    { name: "Trader",      icon: "🎯", fields: ["wallet_address", "rpc_url", "rpc_api_key", "dex_url"] },
+    { name: "Pangolin",    icon: "🐸", fields: ["wallet_address", "rpc_url", "rpc_api_key", "dex_url"] },
   ],
 }
 
@@ -160,10 +162,10 @@ const RPC_PRESETS: Record<string, { label: string; url: string }[]> = {
 
 export function DEXAPIKeysSettings() {
   const [selectedNetwork, setSelectedNetwork] = useState("SOL")
-  const [showRpc, setShowRpc] = useState<Record<string, boolean>>({})
   const [exchanges, setExchanges] = useState<DEXExchange[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedExchanges, setExpandedExchanges] = useState<Record<string, boolean>>({})
+  const [savedExchanges, setSavedExchanges] = useState<Set<string>>(new Set())
 
   // Fetch DEX connections from API on mount
   useEffect(() => {
@@ -176,9 +178,11 @@ export function DEXAPIKeysSettings() {
             name: conn.dex,
             icon: conn.icon,
             network: conn.asset,
-            apiKey: conn.wallet_address,
-            rpcUrl: conn.rpc_url,
-            dexUrl: "",
+            walletAddress: conn.wallet_address || "",
+            rpcUrl: conn.rpc_url || "",
+            rpcApiKey: conn.rpc_api_key || "",
+            dexUrl: conn.dex_url || "",
+            contractAddress: conn.contract_address || "",
             enabled: conn.connected === 1,
             fields: [],
           }))
@@ -196,14 +200,43 @@ export function DEXAPIKeysSettings() {
     )
   }
 
+  const saveExchange = async (ex: DEXExchange) => {
+    try {
+      await fetch(`/api/dex-connections?id=${ex.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: ex.id,
+          asset: ex.network,
+          symbol: ex.name,
+          dex: ex.name,
+          icon: ex.icon,
+          connected: ex.enabled ? 1 : 0,
+          wallet_address: ex.walletAddress,
+          rpc_url: ex.rpcUrl,
+          rpc_api_key: ex.rpcApiKey,
+          dex_url: ex.dexUrl,
+          contract_address: ex.contractAddress || "",
+          chain_id: null,
+        }),
+      })
+      setSavedExchanges((prev) => new Set([...prev, ex.id]))
+      setTimeout(() => {
+        setSavedExchanges((prev) => {
+          const next = new Set(prev)
+          next.delete(ex.id)
+          return next
+        })
+      }, 2000)
+    } catch (err) {
+      console.error("Failed to save exchange:", err)
+    }
+  }
+
   const toggleExchange = (id: string) => {
     setExchanges((prev) =>
       prev.map((ex) => (ex.id === id ? { ...ex, enabled: !ex.enabled } : ex))
     )
-  }
-
-  const toggleRpcVisibility = (id: string) => {
-    setShowRpc((prev) => ({ ...prev, [id]: !prev[id] }))
   }
 
   const toggleExpanded = (id: string) => {
@@ -212,7 +245,7 @@ export function DEXAPIKeysSettings() {
 
   const testConnection = async (id: string) => {
     const ex = exchanges.find((e) => e.id === id)
-    if (ex && ex.apiKey && ex.rpcUrl && ex.dexUrl) {
+    if (ex) {
       setExchanges((prev) =>
         prev.map((e) => (e.id === id ? { ...e, enabled: true } : e))
       )
@@ -232,9 +265,11 @@ export function DEXAPIKeysSettings() {
         name: t.name,
         icon: t.icon,
         network: networkId,
-        apiKey: existing?.apiKey || "",
+        walletAddress: existing?.walletAddress || "",
         rpcUrl: existing?.rpcUrl || "",
+        rpcApiKey: existing?.rpcApiKey || "",
         dexUrl: existing?.dexUrl || "",
+        contractAddress: existing?.contractAddress || "",
         enabled: existing?.enabled || false,
         fields: t.fields,
       } as DEXExchange
@@ -244,6 +279,7 @@ export function DEXAPIKeysSettings() {
   const networkExchanges = getExchangesForNetwork(selectedNetwork)
   const networkInfo = getNetworkInfo(selectedNetwork)
   const presets = RPC_PRESETS[selectedNetwork] || []
+  const dexUrls = DEX_EXCHANGE_URLS[selectedNetwork] || []
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -252,10 +288,10 @@ export function DEXAPIKeysSettings() {
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Wallet className="w-5 h-5 text-purple-400" />
-            DEX Exchange API Keys & RPC
+            DEX Exchange Configuration
           </h2>
           <p className="text-sm text-slate-400 mt-1">
-            Choose a network, then configure your DEX exchange API keys and RPC endpoints
+            Configure your DEX exchanges — wallet address for trading, RPC URL + API key for chain access, DEX endpoint URL
           </p>
         </div>
         <div className="flex gap-2">
@@ -332,7 +368,7 @@ export function DEXAPIKeysSettings() {
                           )}
                         </CardTitle>
                         <CardDescription className="text-slate-500">
-                          Enter your API key, select RPC URL and DEX endpoint
+                          Wallet address for DEX trading | RPC URL + API key for chain access | DEX endpoint URL
                         </CardDescription>
                       </div>
                     </div>
@@ -364,10 +400,23 @@ export function DEXAPIKeysSettings() {
 
                 {expandedExchanges[ex.id] && (
                   <CardContent className="space-y-4">
-                    {/* Dynamic fields based on exchange type */}
+                    {/* Wallet Address - for DEX trading */}
+                    {ex.fields.includes("wallet_address") && (
+                      <div>
+                        <Label className="text-xs text-slate-400 mb-1.5 block">Wallet Address (for DEX trading)</Label>
+                        <Input
+                          value={ex.walletAddress || ""}
+                          onChange={(e) => updateExchange(ex.id, "walletAddress", e.target.value)}
+                          placeholder="Your trading wallet address"
+                          className="bg-slate-800/50 border-slate-700/50 text-white text-xs font-mono focus:ring-purple-500/50 focus:border-purple-500/50"
+                        />
+                      </div>
+                    )}
+
+                    {/* RPC URL - with API key for RPC provider */}
                     {ex.fields.includes("rpc_url") && (
                       <div>
-                        <Label className="text-xs text-slate-400 mb-1.5 block">RPC URL</Label>
+                        <Label className="text-xs text-slate-400 mb-1.5 block">RPC URL (chain endpoint)</Label>
                         <div className="flex gap-2">
                           <Select value={ex.rpcUrl} onValueChange={(val) => updateExchange(ex.id, "rpcUrl", val || "")}>
                             <SelectTrigger className="bg-slate-800/50 border-slate-700/50 text-white text-xs font-mono focus:ring-purple-500/50 focus:border-purple-500/50">
@@ -400,9 +449,23 @@ export function DEXAPIKeysSettings() {
                       </div>
                     )}
 
+                    {/* RPC API Key - for RPC provider */}
+                    {ex.fields.includes("rpc_api_key") && (
+                      <div>
+                        <Label className="text-xs text-slate-400 mb-1.5 block">RPC API Key (for RPC provider)</Label>
+                        <Input
+                          value={ex.rpcApiKey || ""}
+                          onChange={(e) => updateExchange(ex.id, "rpcApiKey", e.target.value)}
+                          placeholder="Your RPC provider API key (Helius, Alchemy, etc.)"
+                          className="bg-slate-800/50 border-slate-700/50 text-white text-xs font-mono focus:ring-purple-500/50 focus:border-purple-500/50"
+                        />
+                      </div>
+                    )}
+
+                    {/* DEX URL - just the endpoint, no API key */}
                     {ex.fields.includes("dex_url") && (
                       <div>
-                        <Label className="text-xs text-slate-400 mb-1.5 block">DEX Exchange URL</Label>
+                        <Label className="text-xs text-slate-400 mb-1.5 block">DEX Exchange URL (endpoint)</Label>
                         <div className="flex gap-2">
                           <Select value={ex.dexUrl} onValueChange={(val) => updateExchange(ex.id, "dexUrl", val || "")}>
                             <SelectTrigger className="bg-slate-800/50 border-slate-700/50 text-white text-xs font-mono focus:ring-purple-500/50 focus:border-purple-500/50">
@@ -411,7 +474,7 @@ export function DEXAPIKeysSettings() {
                             <SelectContent>
                               <SelectGroup>
                                 <SelectLabel className="text-slate-500">Available Endpoints</SelectLabel>
-                                {DEX_EXCHANGE_URLS[selectedNetwork]?.map((dex) => (
+                                {dexUrls?.map((dex) => (
                                   <SelectItem key={dex.url} value={dex.url} className="text-xs">
                                     {dex.label}
                                   </SelectItem>
@@ -423,7 +486,7 @@ export function DEXAPIKeysSettings() {
                               </SelectGroup>
                             </SelectContent>
                           </Select>
-                          {ex.dexUrl && !DEX_EXCHANGE_URLS[selectedNetwork]?.find((d) => d.url === ex.dexUrl) && (
+                          {ex.dexUrl && !dexUrls?.find((d) => d.url === ex.dexUrl) && (
                             <Input
                               value={ex.dexUrl}
                               onChange={(e) => updateExchange(ex.id, "dexUrl", e.target.value)}
@@ -435,30 +498,7 @@ export function DEXAPIKeysSettings() {
                       </div>
                     )}
 
-                    {ex.fields.includes("api_secret") && (
-                      <div>
-                        <Label className="text-xs text-slate-400 mb-1.5 block">API Secret</Label>
-                        <Input
-                          value={ex.apiSecret || ""}
-                          onChange={(e) => updateExchange(ex.id, "apiSecret", e.target.value)}
-                          placeholder="Your API secret"
-                          className="bg-slate-800/50 border-slate-700/50 text-white text-xs font-mono focus:ring-purple-500/50 focus:border-purple-500/50"
-                        />
-                      </div>
-                    )}
-
-                    {ex.fields.includes("passphrase") && (
-                      <div>
-                        <Label className="text-xs text-slate-400 mb-1.5 block">Passphrase</Label>
-                        <Input
-                          value={ex.passphrase || ""}
-                          onChange={(e) => updateExchange(ex.id, "passphrase", e.target.value)}
-                          placeholder="Your API passphrase"
-                          className="bg-slate-800/50 border-slate-700/50 text-white text-xs font-mono focus:ring-purple-500/50 focus:border-purple-500/50"
-                        />
-                      </div>
-                    )}
-
+                    {/* Contract Address (for Uniswap V3/V2) */}
                     {ex.fields.includes("contract_address") && (
                       <div>
                         <Label className="text-xs text-slate-400 mb-1.5 block">Contract Address</Label>
@@ -471,8 +511,16 @@ export function DEXAPIKeysSettings() {
                       </div>
                     )}
 
-                    {/* Action Button */}
+                    {/* Action Buttons */}
                     <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => saveExchange(ex)}
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <Save className="w-4 h-4 mr-1" />
+                        Save to Database
+                      </Button>
                       <Button
                         size="sm"
                         onClick={() => testConnection(ex.id)}
@@ -509,14 +557,13 @@ export function DEXAPIKeysSettings() {
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-purple-400 mt-0.5 shrink-0" />
             <div>
-              <h4 className="text-sm font-semibold text-white">DEX Configuration Tips</h4>
+              <h4 className="text-sm font-semibold text-white">DEX Configuration Guide</h4>
               <ul className="text-xs text-slate-400 mt-1 space-y-1">
-                <li>• Use the RPC URL dropdown to select verified endpoints for each network</li>
-                <li>• Use the DEX Exchange URL dropdown for official API endpoints</li>
-                <li>• API keys vary by exchange — check the exchange docs</li>
-                <li>• Enable exchanges only for networks you actively trade on</li>
+                <li>• Wallet Address: Your trading wallet used to connect to DEXs</li>
+                <li>• RPC URL + API Key: Your RPC provider endpoint and API key (Helius, Alchemy, Infura, etc.)</li>
+                <li>• DEX URL: The DEX exchange endpoint URL (no API key needed)</li>
+                <li>• Save your changes to persist them to the database</li>
                 <li>• Test connections before enabling trading features</li>
-                <li>• Jupiter (Solana) requires a valid API key from jup.ag</li>
               </ul>
             </div>
           </div>
