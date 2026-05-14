@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Wallet, CheckCircle, AlertCircle, ArrowRight, ChevronDown, Save } from "lucide-react"
+import { Wallet, CheckCircle, AlertCircle, ArrowRight, ChevronDown, Save, Check, X, XCircle } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -123,11 +123,11 @@ const DEX_EXCHANGE_URLS: Record<string, { label: string; url: string; example: s
 // RPC URL presets per network — real, verified endpoints
 const RPC_PRESETS: Record<string, { label: string; url: string }[]> = {
   SOL: [
-    { label: "Solana Mainnet (Public)",  url: "https://api.mainnet.solana.com" },
-    { label: "Solana RPC (Helius)",      url: "https://your-helius-endpoint.io" },
-    { label: "Solana RPC (QuickNode)",   url: "https://your-quicknode-endpoint.io" },
-    { label: "Solana RPC (Triton)",      url: "https://your-triton-endpoint.io" },
-    { label: "Solana Mainnet (Genenode)", url: "https://api.genenode.io" },
+    { label: "Solana Mainnet (Public)",    url: "https://api.mainnet.solana.com" },
+    { label: "Solana RPC (Helius)",        url: "https://mainnet.helius-rpc.com/?api=YOUR_API_KEY" },
+    { label: "Solana RPC (QuickNode)",     url: "https://your-quicknode-endpoint.io" },
+    { label: "Solana RPC (Triton)",        url: "https://your-triton-endpoint.io" },
+    { label: "Solana RPC (Genenode)",      url: "https://api.genenode.io" },
   ],
   ETH: [
     { label: "Infura",                   url: "https://your-project.infura.io/v3" },
@@ -167,6 +167,18 @@ export function DEXAPIKeysSettings() {
   const [expandedExchanges, setExpandedExchanges] = useState<Record<string, boolean>>({})
   const [savedExchanges, setSavedExchanges] = useState<Set<string>>(new Set())
 
+  // Toast notification state
+  const [toastVisible, setToastVisible] = useState(false)
+  const [toastMessage, setToastMessage] = useState("")
+  const [toastType, setToastType] = useState<"success" | "error">("success")
+
+  const showToast = (message: string, type: "success" | "error" = "success") => {
+    setToastMessage(message)
+    setToastType(type)
+    setToastVisible(true)
+    setTimeout(() => setToastVisible(false), 4000)
+  }
+
   // Fetch DEX connections from API on mount
   useEffect(() => {
     fetch("/api/dex-connections")
@@ -202,7 +214,7 @@ export function DEXAPIKeysSettings() {
 
   const saveExchange = async (ex: DEXExchange) => {
     try {
-      await fetch(`/api/dex-connections?id=${ex.id}`, {
+      const res = await fetch(`/api/dex-connections?id=${ex.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -220,15 +232,27 @@ export function DEXAPIKeysSettings() {
           chain_id: null,
         }),
       })
-      setSavedExchanges((prev) => new Set([...prev, ex.id]))
-      setTimeout(() => {
-        setSavedExchanges((prev) => {
-          const next = new Set(prev)
-          next.delete(ex.id)
-          return next
-        })
-      }, 2000)
+      // Handle response safely - check content-type and body
+      let data
+      const contentType = res.headers.get("content-type")
+      if (contentType && contentType.includes("application/json") && res.body) {
+        const text = await res.text()
+        try {
+          data = JSON.parse(text)
+        } catch {
+          data = { success: true } // fallback if body is not valid JSON
+        }
+      } else {
+        data = { success: true } // fallback for non-JSON responses
+      }
+      if (res.ok) {
+        setSavedExchanges((prev) => new Set([...prev, ex.id]))
+        showToast(`✅ ${ex.name} saved to database! Data will persist after reboot.`, "success")
+      } else {
+        showToast(`❌ Failed to save ${ex.name}: HTTP ${res.status}`, "error")
+      }
     } catch (err) {
+      showToast(`❌ Connection error — check your network and try again.`, "error")
       console.error("Failed to save exchange:", err)
     }
   }
@@ -290,8 +314,8 @@ export function DEXAPIKeysSettings() {
             <Wallet className="w-5 h-5 text-purple-400" />
             DEX Exchange Configuration
           </h2>
-          <p className="text-sm text-slate-400 mt-1">
-            Configure your DEX exchanges — wallet address for trading, RPC URL + API key for chain access, DEX endpoint URL
+           <p className="text-sm text-slate-400 mt-1">
+            Configure your DEX exchanges — wallet address for trading, RPC endpoint URL for chain access, DEX endpoint URL
           </p>
         </div>
         <div className="flex gap-2">
@@ -368,7 +392,7 @@ export function DEXAPIKeysSettings() {
                           )}
                         </CardTitle>
                         <CardDescription className="text-slate-500">
-                          Wallet address for DEX trading | RPC URL + API key for chain access | DEX endpoint URL
+                          Wallet address for DEX trading | RPC endpoint URL for chain access | DEX endpoint URL
                         </CardDescription>
                       </div>
                     </div>
@@ -413,16 +437,29 @@ export function DEXAPIKeysSettings() {
                       </div>
                     )}
 
-                    {/* RPC URL - with API key for RPC provider */}
+                                    {/* RPC Endpoint URL — single controlled Input field with Select auto-fill */}
                     {ex.fields.includes("rpc_url") && (
                       <div>
-                        <Label className="text-xs text-slate-400 mb-1.5 block">RPC URL (chain endpoint)</Label>
+                        <Label className="text-xs text-slate-400 mb-1.5 block">RPC Endpoint URL</Label>
                         <div className="flex gap-2">
-                          <Select value={ex.rpcUrl} onValueChange={(val) => updateExchange(ex.id, "rpcUrl", val || "")}>
-                            <SelectTrigger className="bg-slate-800/50 border-slate-700/50 text-white text-xs font-mono focus:ring-purple-500/50 focus:border-purple-500/50">
+                          <Select
+                            value={ex.rpcUrl || "custom"}
+                            onValueChange={(val) => {
+                              if (val === null || val === "custom") {
+                                updateExchange(ex.id, "rpcUrl", "")
+                              } else {
+                                updateExchange(ex.id, "rpcUrl", val)
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="w-full bg-slate-800/50 border-slate-700/50 text-white text-xs font-mono focus:ring-purple-500/50 focus:border-purple-500/50">
                               <SelectValue placeholder="Select RPC endpoint..." />
                             </SelectTrigger>
                             <SelectContent>
+                              <SelectGroup>
+                                <SelectLabel className="text-slate-500">Helius (full URL with API key)</SelectLabel>
+                                <SelectItem value="custom">— Paste your own URL —</SelectItem>
+                              </SelectGroup>
                               <SelectGroup>
                                 <SelectLabel className="text-slate-500">Quick RPC Presets</SelectLabel>
                                 {presets.map((preset) => (
@@ -431,44 +468,54 @@ export function DEXAPIKeysSettings() {
                                   </SelectItem>
                                 ))}
                               </SelectGroup>
-                              <SelectGroup>
-                                <SelectLabel className="text-slate-500">Custom URL</SelectLabel>
-                                <SelectItem value="custom">— Type your own URL —</SelectItem>
-                              </SelectGroup>
                             </SelectContent>
                           </Select>
-                          {ex.rpcUrl && !presets.find((p) => p.url === ex.rpcUrl) && (
-                            <Input
-                              value={ex.rpcUrl}
-                              onChange={(e) => updateExchange(ex.id, "rpcUrl", e.target.value)}
-                              placeholder="https://..."
-                              className="bg-slate-800/50 border-slate-700/50 text-white text-xs font-mono flex-1 focus:ring-purple-500/50 focus:border-purple-500/50"
-                            />
-                          )}
                         </div>
+                        <div className="mt-2">
+                          <Input
+                            value={ex.rpcUrl || ""}
+                            onChange={(e) => updateExchange(ex.id, "rpcUrl", e.target.value)}
+                            placeholder="https://your-helius-endpoint.io/?api=YOUR_KEY"
+                            className="bg-slate-800/50 border-slate-700/50 text-white text-xs font-mono focus:ring-purple-500/50 focus:border-purple-500/50"
+                          />
+                        </div>
+                        <p className="text-[10px] text-slate-500 mt-1">
+                          For Helius/Alchemy: paste the full URL (it already includes your API key). No separate key needed.
+                        </p>
                       </div>
                     )}
 
-                    {/* RPC API Key - for RPC provider */}
+                    {/* Optional RPC API Key — only needed for providers that DON'T bundle it in the URL */}
                     {ex.fields.includes("rpc_api_key") && (
                       <div>
-                        <Label className="text-xs text-slate-400 mb-1.5 block">RPC API Key (for RPC provider)</Label>
+                        <Label className="text-xs text-slate-400 mb-1.5 block">
+                          RPC API Key <span className="text-slate-600">(optional — only if your provider doesn't include it in the URL)</span>
+                        </Label>
                         <Input
                           value={ex.rpcApiKey || ""}
                           onChange={(e) => updateExchange(ex.id, "rpcApiKey", e.target.value)}
-                          placeholder="Your RPC provider API key (Helius, Alchemy, etc.)"
+                          placeholder="Skip this if your RPC URL already has the API key (e.g. helius endpoint)"
                           className="bg-slate-800/50 border-slate-700/50 text-white text-xs font-mono focus:ring-purple-500/50 focus:border-purple-500/50"
                         />
                       </div>
                     )}
 
-                    {/* DEX URL - just the endpoint, no API key */}
+                    {/* DEX Exchange URL — single controlled Input field with Select auto-fill */}
                     {ex.fields.includes("dex_url") && (
                       <div>
                         <Label className="text-xs text-slate-400 mb-1.5 block">DEX Exchange URL (endpoint)</Label>
                         <div className="flex gap-2">
-                          <Select value={ex.dexUrl} onValueChange={(val) => updateExchange(ex.id, "dexUrl", val || "")}>
-                            <SelectTrigger className="bg-slate-800/50 border-slate-700/50 text-white text-xs font-mono focus:ring-purple-500/50 focus:border-purple-500/50">
+                          <Select
+                            value={ex.dexUrl || "custom"}
+                            onValueChange={(val) => {
+                              if (val === null || val === "custom") {
+                                updateExchange(ex.id, "dexUrl", "")
+                              } else {
+                                updateExchange(ex.id, "dexUrl", val)
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="w-full bg-slate-800/50 border-slate-700/50 text-white text-xs font-mono focus:ring-purple-500/50 focus:border-purple-500/50">
                               <SelectValue placeholder="Select DEX endpoint..." />
                             </SelectTrigger>
                             <SelectContent>
@@ -482,18 +529,18 @@ export function DEXAPIKeysSettings() {
                               </SelectGroup>
                               <SelectGroup>
                                 <SelectLabel className="text-slate-500">Custom URL</SelectLabel>
-                                <SelectItem value="custom">— Type your own URL —</SelectItem>
+                                <SelectItem value="custom">— Paste your own URL —</SelectItem>
                               </SelectGroup>
                             </SelectContent>
                           </Select>
-                          {ex.dexUrl && !dexUrls?.find((d) => d.url === ex.dexUrl) && (
-                            <Input
-                              value={ex.dexUrl}
-                              onChange={(e) => updateExchange(ex.id, "dexUrl", e.target.value)}
-                              placeholder="https://..."
-                              className="bg-slate-800/50 border-slate-700/50 text-white text-xs font-mono flex-1 focus:ring-purple-500/50 focus:border-purple-500/50"
-                            />
-                          )}
+                        </div>
+                        <div className="mt-2">
+                          <Input
+                            value={ex.dexUrl || ""}
+                            onChange={(e) => updateExchange(ex.id, "dexUrl", e.target.value)}
+                            placeholder="https://your-dex-endpoint.com/api"
+                            className="bg-slate-800/50 border-slate-700/50 text-white text-xs font-mono focus:ring-purple-500/50 focus:border-purple-500/50"
+                          />
                         </div>
                       </div>
                     )}
@@ -551,6 +598,43 @@ export function DEXAPIKeysSettings() {
         )}
       </div>
 
+      {/* ─── Toast Notification ───────────────── */}
+      {toastVisible && (
+        <motion.div
+          initial={{ opacity: 0, y: -50, x: "-50%" }}
+          animate={{ opacity: 1, y: 0, x: "-50%" }}
+          exit={{ opacity: 0, y: -50, x: "-50%" }}
+          className="fixed top-6 left-1/2 z-[9999] max-w-lg w-full px-4"
+        >
+          <div
+            className={`rounded-xl shadow-2xl border p-4 flex items-center gap-3 ${
+              toastType === "success"
+                ? "bg-green-900/90 border-green-500/50 text-green-100 backdrop-blur-md"
+                : "bg-red-900/90 border-red-500/50 text-red-100 backdrop-blur-md"
+            }`}
+          >
+            {toastType === "success" ? (
+              <div className="w-10 h-10 rounded-full bg-green-500/30 flex items-center justify-center shrink-0">
+                <Check className="w-5 h-5 text-green-300" />
+              </div>
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-red-500/30 flex items-center justify-center shrink-0">
+                <XCircle className="w-5 h-5 text-red-300" />
+              </div>
+            )}
+            <div className="flex-1">
+              <p className="text-sm font-medium leading-snug">{toastMessage}</p>
+            </div>
+            <button
+              onClick={() => setToastVisible(false)}
+              className="text-white/50 hover:text-white transition-colors shrink-0"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </motion.div>
+      )}
+
       {/* ─── Info Card ──────────────────────── */}
       <Card className="bg-slate-900/50 border-slate-700/50">
         <CardContent className="p-4">
@@ -560,7 +644,8 @@ export function DEXAPIKeysSettings() {
               <h4 className="text-sm font-semibold text-white">DEX Configuration Guide</h4>
               <ul className="text-xs text-slate-400 mt-1 space-y-1">
                 <li>• Wallet Address: Your trading wallet used to connect to DEXs</li>
-                <li>• RPC URL + API Key: Your RPC provider endpoint and API key (Helius, Alchemy, Infura, etc.)</li>
+                <li>• RPC Endpoint URL: Paste your full RPC URL (Helius/Alchemy bundle API key in URL — no separate key needed)</li>
+                <li>• RPC API Key (optional): Only needed if your provider doesn't include it in the URL</li>
                 <li>• DEX URL: The DEX exchange endpoint URL (no API key needed)</li>
                 <li>• Save your changes to persist them to the database</li>
                 <li>• Test connections before enabling trading features</li>

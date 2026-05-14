@@ -18,6 +18,9 @@ const db = new Database(DB_PATH)
 db.pragma("journal_mode = WAL")
 db.pragma("foreign_keys = ON")
 
+// ─── Schema Migration ───────────────────────────────────────────────────────────
+try { db.exec(`ALTER TABLE dex_connections ADD COLUMN rpc_api_key TEXT NOT NULL DEFAULT ''`) } catch {}
+
 // ─── Schema ─────────────────────────────────────────────────────────────────────
 db.exec(`
   -- Users & Personal Info

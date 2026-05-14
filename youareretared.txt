@@ -1,17 +1,11 @@
-(node:8832) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/Matthias/Desktop/Crypto_Kashi_Bot/Crypto_Kashi_Bot/next.config.js is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to C:\Users\Matthias\Desktop\Crypto_Kashi_Bot\Crypto_Kashi_Bot\package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
-
-
-
-Failed to fetch real prices: Error: CoinGecko API error: 401
-    at fetchRealPrices (src\app\api\assets\route.ts:30:24)
-    at async GET (src\app\api\assets\route.ts:79:22)
-  28 |     })
-  29 |
-> 30 |     if (!res.ok) throw new Error(`CoinGecko API error: ${res.status}`)
-     |                        ^
-  31 |
-  32 |     const data = await res.json()
-  33 |
+⨯ SqliteError: no such column: rpc_api_key
+    at PUT (src\app\api\dex-connections\route.ts:24:19)
+  22 |   const db = getDb()
+  23 |   const body = await request.json()
+> 24 |   const stmt = db.prepare(
+     |                   ^
+  25 |     "UPDATE dex_connections SET asset=?, symbol=?, dex=?, icon=?, connected=?, wallet_address=?, rpc_url=?, rpc_api_key=?, dex_url=?, contract_address...  26 |   )
+  27 |   stmt.run(body.asset, body.symbol, body.dex, body.icon, body.connected ? 1 : 0, body.wallet_address, body.rpc_url, body.rpc_api_key || "", body.dex_u... {
+  code: 'SQLITE_ERROR'
+}
+ PUT /api/dex-connections?id=dex-sol-jupiter 500 in 146ms (next.js: 3ms, application-code: 143ms)

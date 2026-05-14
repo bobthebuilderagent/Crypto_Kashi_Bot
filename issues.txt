@@ -7,24 +7,12 @@ docker run -d \
   --gpus all \
   -p 11434:11434 \
   -v "/mnt/c/Users/Matthias/Desktop/Hermes Agent/ollama_data:/models" \
-  ghcr.io/ggml-org/llama.cpp:server-cuda \
-  -m /models/Qwen3.6-35B-A3B-MXFP4_MOE.gguf \
-  --ctx-size 65536 \
-  --cache-type-k q8_0 \
-  --cache-type-v q8_0 \
-  --cpu-moe \
-  --n-cpu-moe 4 \
-  --n-gpu-layers 99 \
-  --parallel 1 \
-  --batch-size 4 \
-  --ubatch-size 4 \
-  --fit on \
-  --fit-target 0 \
-  --flash-attn on \
-  --threads 6 \
-  --threads-batch 6 \
-  --host 0.0.0.0 \
-  --port 11434
+  ghcr.io/ggerganov/llama.cpp:server-cuda \
+  -m /models/Qwen3.6-35B-A3B-MXFP4_MOE.gguf  -ngl 999 \
+  --n-cpu-moe 35 \
+  --no-mmap --mlock \
+  --cache-type-k turbo4 --cache-type-v turbo3 \
+  -c 262144 --host 0.0.0.0 --port 11434
 
 
 docker run -d \
@@ -38,8 +26,10 @@ docker run -d \
   -c 114688 \
   -ngl 99 \
   -fa 1 \
-  --cache-type-k q4_0 \
-  --cache-type-v q4_0 \
+  --no-mmap \
+  --mlock \
+  --cache-type-k turbo4 \
+  --cache-type-v turbo3 \
   --temp 0.7 \
   --top-k 20 \
   --top-p 0.95 \
@@ -231,3 +221,7 @@ git -c core.sshCommand="ssh -i C:/Users/Matthias/.ssh/id_ed25519_bob" push origi
 
 cp "/mnt/c/Users/Matthias/Desktop/Hermes Agent/ollama_data/flux-2-klein-base-4b-Q8_0.gguf" \
 ~/ComfyUI/models/diffusion_models/
+
+
+
+https://mainnet.helius-rpc.com/?api-key=7de37f53-1be1-454b-808b-86547b3700f8
